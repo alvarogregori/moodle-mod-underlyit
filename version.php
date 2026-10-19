@@ -2,7 +2,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_studymark';
-$plugin->version = 2026101900;
-$plugin->requires = 2022112800;
+$plugin->version = 2026101903;
+$plugin->requires = 2023042400;
 $plugin->maturity = MATURITY_ALPHA;
-$plugin->release = '0.9.0 (MVP)';
+$plugin->release = '0.10.0 (MVP)';

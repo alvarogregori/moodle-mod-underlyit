@@ -1,0 +1,14 @@
+{
+  "sample.html": [
+    {"tag": "h1", "text": "Sample title"},
+    {"tag": "p", "text": "First paragraph."},
+    {"tag": "h2", "text": "Section"},
+    {"tag": "li", "text": "First item"},
+    {"tag": "li", "text": "Second item"}
+  ],
+  "sample.txt": [
+    {"tag": "p", "text": "First paragraph spans one wrapped line."},
+    {"tag": "p", "text": "Second paragraph."}
+  ],
+  "note": "Expected block order and text for the browser normalizer. textContent length is computed after rendering because adjacent HTML blocks have no implicit text separator."
+}

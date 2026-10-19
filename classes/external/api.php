@@ -11,6 +11,23 @@ use core_external\external_value;
 use mod_studymark\local\access;
 
 final class api extends external_api {
+    private static function validate_color(string $color): string {
+        if (!preg_match('/^#[0-9a-f]{6}$/i', $color)) {
+            throw new \invalid_parameter_exception('Invalid highlight colour');
+        }
+        return strtolower($color);
+    }
+
+    private static function validate_selector(string $selectorjson, int $textlength): void {
+        $selector = json_decode($selectorjson, true);
+        if (!is_array($selector) || ($selector['type'] ?? '') !== 'text-offset' ||
+                !isset($selector['start'], $selector['end']) || !is_int($selector['start']) ||
+                !is_int($selector['end']) || $selector['start'] < 0 || $selector['end'] <= $selector['start'] ||
+                ($textlength > 0 && $selector['end'] > $textlength)) {
+            throw new \invalid_parameter_exception('Invalid text selector');
+        }
+    }
+
     private static function document_structure(): external_single_structure {
         return new external_single_structure([
             'id' => new external_value(PARAM_INT, 'Document ID'),
@@ -37,6 +54,7 @@ final class api extends external_api {
             'headingcontext' => new external_value(PARAM_RAW, 'Heading', VALUE_OPTIONAL, ''),
             'positionorder' => new external_value(PARAM_FLOAT, 'Position'),
             'shared' => new external_value(PARAM_BOOL, 'Shared'),
+            'reference' => new external_value(PARAM_BOOL, 'Reference highlight'),
             'timecreated' => new external_value(PARAM_INT, 'Created'),
             'canedit' => new external_value(PARAM_BOOL, 'Can edit'),
         ]);
@@ -95,13 +113,13 @@ final class api extends external_api {
     }
     public static function get_highlights(int $cmid, int $documentid, int $groupid = 0): array {
         global $DB, $USER;
-        [$cm, , $context] = access::document($cmid, $documentid);
+        [$cm, , $context, $document] = access::document($cmid, $documentid);
         $groupid = access::active_group($cm, $groupid);
         $params = ['documentid' => $documentid, 'userid' => $USER->id, 'groupid' => $groupid];
         $sql = "SELECT h.*, u.firstname, u.lastname
                   FROM {studymark_highlight} h JOIN {user} u ON u.id = h.userid
                  WHERE h.documentid = :documentid
-                   AND (h.userid = :userid OR (h.shared = 1 AND h.groupid = :groupid))
+                   AND (h.userid = :userid OR h.reference = 1 OR (h.shared = 1 AND h.groupid = :groupid))
               ORDER BY h.positionorder, h.id";
         return array_values(array_map(fn($h) => self::export_highlight($h, $context), $DB->get_records_sql($sql, $params)));
     }
@@ -115,24 +133,24 @@ final class api extends external_api {
             'pagenumber' => new external_value(PARAM_INT, 'Page', VALUE_DEFAULT, 0), 'color' => new external_value(PARAM_TEXT, 'Colour', VALUE_DEFAULT, '#ffff00'),
             'note' => new external_value(PARAM_RAW, 'Note', VALUE_DEFAULT, ''), 'headingcontext' => new external_value(PARAM_RAW, 'Heading', VALUE_DEFAULT, ''),
             'positionorder' => new external_value(PARAM_FLOAT, 'Position', VALUE_DEFAULT, 0), 'shared' => new external_value(PARAM_BOOL, 'Shared', VALUE_DEFAULT, false),
-            'totalchars' => new external_value(PARAM_INT, 'Normalized document length', VALUE_DEFAULT, 0),
+            'reference' => new external_value(PARAM_BOOL, 'Reference highlight', VALUE_DEFAULT, false),
         ]);
     }
-    public static function create_highlight($cmid, $documentid, $groupid, $selectedtext, $selectorjson, $pagenumber, $color, $note, $headingcontext, $positionorder, $shared, $totalchars = 0): array {
+    public static function create_highlight($cmid, $documentid, $groupid, $selectedtext, $selectorjson, $pagenumber, $color, $note, $headingcontext, $positionorder, $shared, $reference = false): array {
         global $DB, $USER;
-        [$cm, , $context] = access::document($cmid, $documentid);
+        [$cm, , $context, $document] = access::document($cmid, $documentid);
         require_capability('mod/studymark:addhighlight', $context);
         if ($shared) { require_capability('mod/studymark:sharehighlight', $context); }
         $groupid = $shared ? access::active_group($cm, $groupid) : 0;
-        json_decode($selectorjson ?: '{}');
-        if (json_last_error() !== JSON_ERROR_NONE) { throw new \invalid_parameter_exception('Invalid selector JSON'); }
-        $record = (object) compact('documentid', 'groupid', 'selectedtext', 'selectorjson', 'pagenumber', 'color', 'note', 'headingcontext', 'positionorder', 'shared');
+        if ($reference) { require_capability('mod/studymark:manageannotations', $context); }
+        self::validate_selector($selectorjson, (int)$document->textlength);
+        $color = self::validate_color($color);
+        $record = (object) compact('documentid', 'groupid', 'selectedtext', 'selectorjson', 'pagenumber', 'color', 'note', 'headingcontext', 'positionorder', 'shared', 'reference');
         $record->userid = $USER->id; $record->timecreated = $record->timemodified = time();
         $record->id = $DB->insert_record('studymark_highlight', $record);
-        if ($totalchars > 0) { $DB->set_field('studymark_document', 'textlength', (int)$totalchars, ['id' => $documentid]); }
         $record->firstname = $USER->firstname; $record->lastname = $USER->lastname;
         \mod_studymark\event\highlight_created::create(['objectid' => $record->id, 'context' => $context, 'relateduserid' => $USER->id])->trigger();
-        \mod_studymark\local\completion::refresh($cm, $context, $USER->id, has_capability('mod/studymark:manageannotations', $context));
+        \mod_studymark\local\completion::refresh($cm, $context, $USER->id, $reference);
         return self::export_highlight($record, $context);
     }
     public static function create_highlight_returns(): external_single_structure { return self::highlight_structure(); }
@@ -147,10 +165,31 @@ final class api extends external_api {
         if ($h->userid != $USER->id && !has_capability('mod/studymark:manageannotations', $context)) { throw new \required_capability_exception($context, 'mod/studymark:manageannotations', 'nopermissions', ''); }
         $DB->delete_records('studymark_comment', ['highlightid' => $highlightid]);
         $DB->delete_records('studymark_highlight', ['id' => $highlightid]);
-        \mod_studymark\local\completion::refresh($cm, $context, (int)$h->userid, has_capability('mod/studymark:manageannotations', $context, $h->userid));
+        \mod_studymark\local\completion::refresh($cm, $context, (int)$h->userid, !empty($h->reference));
         return true;
     }
     public static function delete_highlight_returns(): external_value { return new external_value(PARAM_BOOL, 'Deleted'); }
+
+    public static function set_document_length_parameters(): external_function_parameters {
+        return new external_function_parameters(['cmid' => new external_value(PARAM_INT, 'CM ID'),
+            'documentid' => new external_value(PARAM_INT, 'Document ID'),
+            'textlength' => new external_value(PARAM_INT, 'Normalized character count')]);
+    }
+    public static function set_document_length(int $cmid, int $documentid, int $textlength): bool {
+        global $DB;
+        [$cm, , $context] = access::document($cmid, $documentid);
+        require_capability('mod/studymark:manageannotations', $context);
+        if ($textlength < 1) { throw new \invalid_parameter_exception('Invalid document length'); }
+        $current = (int)$DB->get_field('studymark_document', 'textlength', ['id' => $documentid], MUST_EXIST);
+        if ($current !== $textlength) {
+            $DB->set_field('studymark_document', 'textlength', $textlength, ['id' => $documentid]);
+            \mod_studymark\local\completion::refresh($cm, $context, 0, true);
+        }
+        return true;
+    }
+    public static function set_document_length_returns(): external_value {
+        return new external_value(PARAM_BOOL, 'Saved');
+    }
 
     public static function get_comments_parameters(): external_function_parameters {
         return new external_function_parameters(['cmid' => new external_value(PARAM_INT, 'CM ID'), 'documentid' => new external_value(PARAM_INT, 'Document ID'), 'groupid' => new external_value(PARAM_INT, 'Group ID', VALUE_DEFAULT, 0)]);
@@ -173,7 +212,13 @@ final class api extends external_api {
         [$cm, , $context] = access::document($cmid, $documentid);
         require_capability('mod/studymark:addcomment', $context);
         $groupid = access::active_group($cm, $groupid);
-        if ($highlightid && !$DB->record_exists('studymark_highlight', ['id' => $highlightid, 'documentid' => $documentid])) { throw new \invalid_parameter_exception('Invalid highlight'); }
+        if ($highlightid) {
+            $highlight = $DB->get_record('studymark_highlight', ['id' => $highlightid, 'documentid' => $documentid], '*', MUST_EXIST);
+            $visible = (int)$highlight->userid === (int)$USER->id || !empty($highlight->reference) ||
+                (!empty($highlight->shared) && (int)$highlight->groupid === $groupid) ||
+                has_capability('mod/studymark:manageannotations', $context);
+            if (!$visible) { throw new \invalid_parameter_exception('Invalid highlight'); }
+        }
         $record = (object) ['documentid' => $documentid, 'highlightid' => $highlightid ?: null, 'userid' => $USER->id, 'groupid' => $groupid, 'content' => trim($content), 'timecreated' => time(), 'timemodified' => time()];
         if ($record->content === '') { throw new \invalid_parameter_exception('Comment is empty'); }
         $record->id = $DB->insert_record('studymark_comment', $record);
@@ -198,7 +243,7 @@ final class api extends external_api {
 
     private static function export_highlight($h, $context): array {
         global $USER;
-        return ['id'=>(int)$h->id,'documentid'=>(int)$h->documentid,'userid'=>(int)$h->userid,'userfullname'=>fullname($h),'groupid'=>(int)$h->groupid,'selectedtext'=>$h->selectedtext,'selectorjson'=>$h->selectorjson ?? '','pagenumber'=>(int)($h->pagenumber ?? 0),'color'=>$h->color,'note'=>$h->note ?? '','headingcontext'=>$h->headingcontext ?? '','positionorder'=>(float)$h->positionorder,'shared'=>(bool)$h->shared,'timecreated'=>(int)$h->timecreated,'canedit'=>$h->userid == $USER->id || has_capability('mod/studymark:manageannotations',$context)];
+        return ['id'=>(int)$h->id,'documentid'=>(int)$h->documentid,'userid'=>(int)$h->userid,'userfullname'=>fullname($h),'groupid'=>(int)$h->groupid,'selectedtext'=>$h->selectedtext,'selectorjson'=>$h->selectorjson ?? '','pagenumber'=>(int)($h->pagenumber ?? 0),'color'=>$h->color,'note'=>$h->note ?? '','headingcontext'=>$h->headingcontext ?? '','positionorder'=>(float)$h->positionorder,'shared'=>(bool)$h->shared,'reference'=>(bool)($h->reference ?? false),'timecreated'=>(int)$h->timecreated,'canedit'=>$h->userid == $USER->id || has_capability('mod/studymark:manageannotations',$context)];
     }
     private static function export_comment($c, $context): array {
         global $USER;

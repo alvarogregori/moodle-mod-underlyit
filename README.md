@@ -1,17 +1,17 @@
 # mod_studymark
 
-StudyMark is a Moodle activity plugin for collaborative document reading, highlighting and discussion.
+StudyMark is a Moodle activity plugin for active and collaborative document reading.
 
 ## Install
 
-Copy this directory to `mod/studymark`, visit **Site administration → Notifications**, then add a StudyMark activity to a course. Upload PDF, EPUB, HTML or text files in the activity settings.
+Copy this directory to `mod/studymark`, visit **Site administration > Notifications**, then add a StudyMark activity to a course. Each activity accepts one PDF, EPUB, DOCX, HTML or TXT document.
 
-The current release is an MVP. See `docs/ARCHITECTURE.md` for the migration boundary, implemented integrations and Marketplace roadmap.
+This release is an MVP. See `docs/ARCHITECTURE.md` for implemented behaviour, limitations and the Marketplace roadmap.
 
 ## Requirements
 
-- Moodle 4.1 or later
-- PHP and database versions supported by the selected Moodle release
+- Moodle 4.2 or later (the plugin uses the `core_external` namespace introduced in 4.2).
+- A PHP and database version supported by the selected Moodle release.
 
 ## License
 

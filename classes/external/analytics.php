@@ -9,26 +9,25 @@ use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
 use mod_studymark\local\access;
+use mod_studymark\local\metrics;
 
 final class analytics extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'cmid' => new external_value(PARAM_INT, 'Course module ID'),
             'documentid' => new external_value(PARAM_INT, 'Document ID'),
-            'totalchars' => new external_value(PARAM_INT, 'Normalized document character count'),
         ]);
     }
 
-    public static function execute(int $cmid, int $documentid, int $totalchars): array {
+    public static function execute(int $cmid, int $documentid): array {
         global $DB;
-        [$cm, , $context] = access::document($cmid, $documentid);
+        [$cm, , $context, $document] = access::document($cmid, $documentid);
         require_capability('mod/studymark:manageannotations', $context);
-        $totalchars = max(1, $totalchars);
-        $DB->set_field('studymark_document', 'textlength', $totalchars, ['id' => $documentid]);
-        \mod_studymark\local\completion::refresh($cm, $context, 0, true);
+        $totalchars = max(1, (int)$document->textlength);
         $records = $DB->get_records('studymark_highlight', ['documentid' => $documentid], 'userid, id');
         $byuser = [];
         $counts = [];
+        $reference = [];
         foreach ($records as $record) {
             $counts[$record->userid] = ($counts[$record->userid] ?? 0) + 1;
             $selector = json_decode($record->selectorjson ?? '', true);
@@ -39,18 +38,13 @@ final class analytics extends external_api {
             $end = max(0, min($totalchars, (int)($selector['end'] ?? 0)));
             if ($end > $start) {
                 $byuser[$record->userid][] = [$start, $end];
+                if (!empty($record->reference)) { $reference[] = [$start, $end]; }
             }
         }
         foreach ($byuser as $userid => $intervals) {
-            $byuser[$userid] = self::merge_intervals($intervals);
+            $byuser[$userid] = metrics::merge_intervals($intervals);
         }
-        $reference = [];
-        foreach ($byuser as $userid => $intervals) {
-            if (has_capability('mod/studymark:manageannotations', $context, $userid)) {
-                $reference = array_merge($reference, $intervals);
-            }
-        }
-        $reference = self::merge_intervals($reference);
+        $reference = metrics::merge_intervals($reference);
         $participants = get_enrolled_users($context, 'mod/studymark:addhighlight', 0, 'u.id,u.firstname,u.lastname', 'u.lastname,u.firstname');
         $rows = [];
         foreach ($participants as $participant) {
@@ -58,10 +52,10 @@ final class analytics extends external_api {
                 continue;
             }
             $intervals = $byuser[$participant->id] ?? [];
-            $covered = self::length($intervals);
+            $covered = metrics::length($intervals);
             $furthest = $intervals ? max(array_column($intervals, 1)) : 0;
-            $intersection = self::intersection_length($intervals, $reference);
-            $union = $covered + self::length($reference) - $intersection;
+            $intersection = metrics::intersection_length($intervals, $reference);
+            $union = $covered + metrics::length($reference) - $intersection;
             $rows[] = [
                 'userid' => (int)$participant->id,
                 'fullname' => fullname($participant),
@@ -79,47 +73,11 @@ final class analytics extends external_api {
         unset($row);
         return [
             'documentchars' => $totalchars,
-            'referencechars' => self::length($reference),
+            'referencechars' => metrics::length($reference),
             'hasreference' => !empty($reference),
             'courseaverage' => round($average, 1),
             'students' => $rows,
         ];
-    }
-
-    private static function merge_intervals(array $intervals): array {
-        if (!$intervals) {
-            return [];
-        }
-        usort($intervals, static fn($a, $b) => $a[0] <=> $b[0] ?: $a[1] <=> $b[1]);
-        $merged = [array_shift($intervals)];
-        foreach ($intervals as $interval) {
-            $last = count($merged) - 1;
-            if ($interval[0] <= $merged[$last][1]) {
-                $merged[$last][1] = max($merged[$last][1], $interval[1]);
-            } else {
-                $merged[] = $interval;
-            }
-        }
-        return $merged;
-    }
-
-    private static function length(array $intervals): int {
-        return array_sum(array_map(static fn($interval) => $interval[1] - $interval[0], $intervals));
-    }
-
-    private static function intersection_length(array $left, array $right): int {
-        $length = 0;
-        $i = 0;
-        $j = 0;
-        while ($i < count($left) && $j < count($right)) {
-            $length += max(0, min($left[$i][1], $right[$j][1]) - max($left[$i][0], $right[$j][0]));
-            if ($left[$i][1] < $right[$j][1]) {
-                $i++;
-            } else {
-                $j++;
-            }
-        }
-        return $length;
     }
 
     public static function execute_returns(): external_single_structure {

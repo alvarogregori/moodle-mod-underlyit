@@ -14,10 +14,14 @@ define([], function() {
             return {type: 'text-offset', start: before.toString().length, end: before.toString().length + range.toString().length};
         }
         handleSelection() {
+            if (!this.onSave) return;
             const selection = window.getSelection();
             if (!selection || selection.isCollapsed || !selection.rangeCount) return;
             const range = selection.getRangeAt(0);
             if (!this.container.contains(range.commonAncestorContainer)) return;
+            const element = node => node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+            if (element(range.startContainer)?.closest('mark[data-highlight-id]') ||
+                    element(range.endContainer)?.closest('mark[data-highlight-id]')) return;
             const text = selection.toString().trim();
             if (!text) return;
             this.onSave({selectedtext: text, selectorjson: JSON.stringify(this.offsets(range)), color: '#fff176', positionorder: this.offsets(range).start});

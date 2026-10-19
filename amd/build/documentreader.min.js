@@ -12,25 +12,42 @@ define([], function() {
         constructor(options) { this.options = options; }
 
         async load() {
-            this.options.progress('Extrayendo el contenido del documento…');
+            this.options.progress(this.options.strings.extractingdocument);
             const response = await fetch(this.options.url, {credentials: 'same-origin'});
-            if (!response.ok) throw new Error('No se pudo descargar el documento');
+            if (!response.ok) throw new Error(this.options.strings.downloaddocumenterror);
             const buffer = await response.arrayBuffer();
             let blocks;
             if (/pdf/i.test(this.options.mimetype)) blocks = await this.fromPdf(buffer);
             else if (/epub/i.test(this.options.mimetype) || /\.epub$/i.test(this.options.filename)) blocks = await this.fromEpub(buffer);
             else if (/wordprocessingml|docx/i.test(this.options.mimetype) || /\.docx$/i.test(this.options.filename)) blocks = await this.fromDocx(buffer);
-            else blocks = [{tag: 'p', text: clean(new TextDecoder().decode(buffer)), page: 0}];
+            else if (/html/i.test(this.options.mimetype) || /\.html?$/i.test(this.options.filename)) blocks = this.fromHtml(buffer);
+            else blocks = this.fromText(buffer);
             return this.render(blocks.filter(block => block.text));
         }
 
+        fromHtml(buffer) {
+            const doc = new DOMParser().parseFromString(new TextDecoder().decode(buffer), 'text/html');
+            doc.querySelectorAll('script,style,noscript,template').forEach(node => node.remove());
+            const blocks = Array.from(doc.body.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,blockquote')).map(node => ({
+                tag: node.tagName.toLowerCase(), text: clean(node.textContent), page: 0
+            })).filter(block => block.text);
+            return blocks.length ? blocks : [{tag: 'p', text: clean(doc.body.textContent), page: 0}];
+        }
+
+        fromText(buffer) {
+            const text = new TextDecoder().decode(buffer).replace(/\r\n?/g, '\n').trim();
+            return text.split(/\n\s*\n+/).map(paragraph => ({
+                tag: 'p', text: clean(paragraph.replace(/\n/g, ' ')), page: 0
+            })).filter(block => block.text);
+        }
+
         async fromPdf(buffer) {
-            if (!window.pdfjsLib) throw new Error('PDF.js no está disponible');
+            if (!window.pdfjsLib) throw new Error(this.options.strings.pdfjsunavailable);
             window.pdfjsLib.GlobalWorkerOptions.workerSrc = this.options.workerUrl;
             const pdf = await window.pdfjsLib.getDocument({data: buffer}).promise;
             const lines = [];
             for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-                this.options.progress(`Extrayendo página ${pageNumber} de ${pdf.numPages}…`);
+                this.options.progress(`${this.options.strings.extractingpage} ${pageNumber} ${this.options.strings.of} ${pdf.numPages}…`);
                 const page = await pdf.getPage(pageNumber);
                 const content = await page.getTextContent();
                 const pageLines = [];
@@ -64,12 +81,14 @@ define([], function() {
         }
 
         async fromEpub(buffer) {
-            if (!window.JSZip) throw new Error('JSZip no está disponible');
+            if (!window.JSZip) throw new Error(this.options.strings.jszipunavailable);
             const zip = await window.JSZip.loadAsync(buffer);
             const parser = new DOMParser();
-            const container = parser.parseFromString(await zip.file('META-INF/container.xml').async('text'), 'application/xml');
+            const containerFile = zip.file('META-INF/container.xml');
+            if (!containerFile) throw new Error(this.options.strings.invalidepub);
+            const container = parser.parseFromString(await containerFile.async('text'), 'application/xml');
             const rootfile = local(container, 'rootfile')[0]?.getAttribute('full-path');
-            if (!rootfile || !zip.file(rootfile)) throw new Error('EPUB sin paquete OPF válido');
+            if (!rootfile || !zip.file(rootfile)) throw new Error(this.options.strings.invalidepub);
             const opf = parser.parseFromString(await zip.file(rootfile).async('text'), 'application/xml');
             const manifest = {};
             local(opf, 'item').forEach(item => manifest[item.getAttribute('id')] = item.getAttribute('href'));
@@ -87,10 +106,10 @@ define([], function() {
         }
 
         async fromDocx(buffer) {
-            if (!window.JSZip) throw new Error('JSZip no está disponible');
+            if (!window.JSZip) throw new Error(this.options.strings.jszipunavailable);
             const zip = await window.JSZip.loadAsync(buffer);
             const file = zip.file('word/document.xml');
-            if (!file) throw new Error('DOCX sin document.xml');
+            if (!file) throw new Error(this.options.strings.invaliddocx);
             const xml = new DOMParser().parseFromString(await file.async('text'), 'application/xml');
             return local(xml, 'p').map(paragraph => {
                 const text = clean(local(paragraph, 't').map(node => node.textContent).join(''));

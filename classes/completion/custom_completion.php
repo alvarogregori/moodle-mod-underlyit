@@ -31,9 +31,12 @@ final class custom_completion extends activity_custom_completion {
     }
 
     public function get_custom_rule_descriptions(): array {
+        global $DB;
+        $activity = $DB->get_record('studymark', ['id' => $this->cm->instance],
+            'completionprogress, completionmatch', MUST_EXIST);
         return [
-            'completionprogress' => get_string('completionprogressdesc', 'studymark', $this->cm->completionprogress),
-            'completionmatch' => get_string('completionmatchdesc', 'studymark', $this->cm->completionmatch),
+            'completionprogress' => get_string('completionprogressdesc', 'studymark', $activity->completionprogress),
+            'completionmatch' => get_string('completionmatchdesc', 'studymark', $activity->completionmatch),
         ];
     }
 

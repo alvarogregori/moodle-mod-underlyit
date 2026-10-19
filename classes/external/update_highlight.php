@@ -37,7 +37,10 @@ final class update_highlight extends external_api {
         } else {
             $groupid = 0;
         }
-        $record->color = $color;
+        if (!preg_match('/^#[0-9a-f]{6}$/i', $color)) {
+            throw new \invalid_parameter_exception('Invalid highlight colour');
+        }
+        $record->color = strtolower($color);
         $record->note = $note;
         $record->shared = (int) $shared;
         $record->groupid = $groupid;

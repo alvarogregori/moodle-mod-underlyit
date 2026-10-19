@@ -15,6 +15,22 @@ function studymark_supports($feature) {
     }
 }
 
+function studymark_get_coursemodule_info($coursemodule) {
+    global $DB;
+    $activity = $DB->get_record('studymark', ['id' => $coursemodule->instance],
+        'id, name, completionprogress, completionmatch');
+    if (!$activity) {
+        return null;
+    }
+    $info = new cached_cm_info();
+    $info->name = $activity->name;
+    $info->customdata = ['customcompletionrules' => [
+        'completionprogress' => (int)$activity->completionprogress,
+        'completionmatch' => (int)$activity->completionmatch,
+    ]];
+    return $info;
+}
+
 function studymark_add_instance($data, $mform = null) {
     global $DB, $USER;
     $data->timecreated = $data->timemodified = time();
@@ -39,21 +55,26 @@ function studymark_save_documents($data, int $userid): void {
     }
     $context = context_module::instance($data->coursemodule);
     file_save_draft_area_files($data->documents, $context->id, 'mod_studymark', 'documents', 0, [
-        'subdirs' => false,
-        'maxfiles' => 1,
+        'subdirs' => false, 'maxfiles' => 1,
         'accepted_types' => ['.pdf', '.epub', '.docx', '.html', '.htm', '.txt'],
     ]);
-    $fs = get_file_storage();
-    $files = $fs->get_area_files($context->id, 'mod_studymark', 'documents', 0, 'filename', false);
-    $seen = [];
-    foreach ($files as $file) {
-        $seen[] = $file->get_filename();
-        $existing = $DB->get_record('studymark_document', ['studymarkid' => $data->id, 'filename' => $file->get_filename()]);
+    $files = get_file_storage()->get_area_files($context->id, 'mod_studymark', 'documents', 0, 'filename', false);
+    $file = reset($files) ?: null;
+    $existing = $DB->get_record('studymark_document', ['studymarkid' => $data->id]);
+    $transaction = $DB->start_delegated_transaction();
+    if ($file) {
+        $contenthash = $file->get_contenthash();
+        $changed = $existing && $existing->contenthash !== $contenthash;
+        if ($changed) {
+            $DB->delete_records('studymark_comment', ['documentid' => $existing->id]);
+            $DB->delete_records('studymark_highlight', ['documentid' => $existing->id]);
+        }
         $record = (object) [
             'studymarkid' => $data->id, 'userid' => $existing->userid ?? $userid,
             'title' => pathinfo($file->get_filename(), PATHINFO_FILENAME),
             'filename' => $file->get_filename(), 'mimetype' => $file->get_mimetype(),
-            'filesize' => $file->get_filesize(), 'timemodified' => time(),
+            'filesize' => $file->get_filesize(), 'contenthash' => $contenthash,
+            'textlength' => $changed ? 0 : (int)($existing->textlength ?? 0), 'timemodified' => time(),
         ];
         if ($existing) {
             $record->id = $existing->id;
@@ -62,14 +83,12 @@ function studymark_save_documents($data, int $userid): void {
             $record->timecreated = time();
             $DB->insert_record('studymark_document', $record);
         }
+    } else if ($existing) {
+        $DB->delete_records('studymark_comment', ['documentid' => $existing->id]);
+        $DB->delete_records('studymark_highlight', ['documentid' => $existing->id]);
+        $DB->delete_records('studymark_document', ['id' => $existing->id]);
     }
-    if ($seen) {
-        [$sql, $params] = $DB->get_in_or_equal($seen, SQL_PARAMS_NAMED, 'fn', false);
-        $params['sid'] = $data->id;
-        $DB->delete_records_select('studymark_document', "studymarkid = :sid AND filename $sql", $params);
-    } else {
-        $DB->delete_records('studymark_document', ['studymarkid' => $data->id]);
-    }
+    $transaction->allow_commit();
 }
 
 function studymark_delete_instance($id) {
