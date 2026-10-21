@@ -57,6 +57,7 @@ define([], function() {
                 part.setEnd(segment.node, segment.end);
                 const mark = document.createElement('mark');
                 mark.dataset.highlightId = item.id;
+                mark.dataset.reference = item.reference ? '1' : '0';
                 mark.style.backgroundColor = item.color;
                 mark.title = item.note || item.userfullname;
                 try { part.surroundContents(mark); } catch (error) { /* Ignore stale fragments only. */ }

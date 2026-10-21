@@ -1,3 +1,8 @@
+## 0.14.2
+
+- Added a learner control to show or hide the tutor reference when the tutor makes it available.
+- Rendered tutor reference highlighting as a translucent underline layer so personal highlighting remains visually dominant.
+
 ## 0.14.1
 
 - Renamed tutor report metrics using plain educational language.

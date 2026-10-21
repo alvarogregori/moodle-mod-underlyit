@@ -61,5 +61,8 @@ function xmldb_studymark_upgrade($oldversion) {
         }
         upgrade_mod_savepoint(true, 2026102106, 'studymark');
     }
+    if ($oldversion < 2026102108) {
+        upgrade_mod_savepoint(true, 2026102108, 'studymark');
+    }
     return true;
 }

@@ -28,7 +28,7 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
             'nodocument', 'documentprocesserror', 'deletehighlightconfirm', 'extractingdocument', 'downloaddocumenterror',
             'pdfjsunavailable', 'extractingpage', 'of', 'jszipunavailable', 'invalidepub', 'invaliddocx',
             'hideoutline', 'showoutline', 'containshighlights', 'referencemode', 'referencemodeactive',
-            'showreference', 'hidereference',
+            'showreference', 'hidereference', 'viewreference', 'hidereferenceview',
             'highlightcolor', 'yellow', 'blue', 'green', 'pink', 'orange', 'selectedcolor',
             'deletehighlight', 'selectedhighlight'];
         const values = await Str.get_strings(keys.map(key => ({key, component: 'mod_studymark'})));
@@ -52,7 +52,7 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
             `<button type="button" class="btn btn-icon btn-outline-secondary" data-action="toggle-outline" aria-expanded="true" aria-label="${escape(s.hideoutline)}" title="${escape(s.hideoutline)}">${icons.outline}</button>` +
             `<button type="button" class="btn btn-icon btn-outline-secondary" data-action="summary" disabled aria-label="${escape(s.summaryreading)}" title="${escape(s.summaryreading)}">${icons.summary}</button>` +
             `<a class="btn btn-icon btn-outline-secondary" data-action="original" href="#" target="_blank" rel="noopener" aria-label="${escape(s.originaldocument)}" title="${escape(s.originaldocument)}">${icons.original}</a>` +
-            (config.canmanage ? `<button type="button" class="btn btn-icon btn-outline-secondary active" data-action="reference" aria-pressed="true" aria-label="${escape(s.referencemodeactive)}" title="${escape(s.referencemodeactive)}">${icons.reference}</button><button type="button" class="btn btn-icon btn-outline-secondary ${config.showreference ? 'active' : ''}" data-action="reference-visibility" aria-pressed="${String(Boolean(config.showreference))}" aria-label="${escape(config.showreference ? s.hidereference : s.showreference)}" title="${escape(config.showreference ? s.hidereference : s.showreference)}">${icons.visibility}</button><a class="btn btn-icon btn-outline-secondary" href="${config.reporturl}" aria-label="${escape(s.analytics)}" title="${escape(s.analytics)}">${icons.analytics}</a>` : '') +
+            (config.canmanage ? `<button type="button" class="btn btn-icon btn-outline-secondary active" data-action="reference" aria-pressed="true" aria-label="${escape(s.referencemodeactive)}" title="${escape(s.referencemodeactive)}">${icons.reference}</button><button type="button" class="btn btn-icon btn-outline-secondary ${config.showreference ? 'active' : ''}" data-action="reference-visibility" aria-pressed="${String(Boolean(config.showreference))}" aria-label="${escape(config.showreference ? s.hidereference : s.showreference)}" title="${escape(config.showreference ? s.hidereference : s.showreference)}">${icons.visibility}</button><a class="btn btn-icon btn-outline-secondary" href="${config.reporturl}" aria-label="${escape(s.analytics)}" title="${escape(s.analytics)}">${icons.analytics}</a>` : (config.showreference ? `<button type="button" class="btn btn-icon btn-outline-secondary active" data-action="toggle-reference-view" aria-pressed="true" aria-label="${escape(s.hidereferenceview)}" title="${escape(s.hidereferenceview)}">${icons.visibility}</button>` : '')) +
             `<a class="btn btn-icon btn-outline-secondary" href="${config.courseurl}" aria-label="${escape(s.exittocourse)}" title="${escape(s.exittocourse)}">${icons.exit}</a>` +
             `<button type="button" class="btn btn-icon btn-outline-secondary" data-action="toggle-focus" aria-label="${escape(s.togglefullscreen)}" title="${escape(s.togglefullscreen)}">${icons.fullscreen}</button>` +
             `</div></nav><div class="studymark-layout"><nav class="studymark-outline" aria-label="${escape(s.documentoutline)}"><h2>${escape(s.outline)}</h2><div data-region="outline"></div></nav><main class="studymark-reader"><div data-region="viewer" class="studymark-empty">${escape(s.loadingdocument)}</div></main></div>`;
@@ -263,7 +263,15 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
                 clearSelectedHighlight(); renderMode(); updateOutlineHighlights();
                 return;
             }
-            if (action === 'reference-visibility') {
+            if (action === 'toggle-reference-view') {
+                const hidden = root.classList.toggle('studymark-reference-hidden');
+                const button = root.querySelector('[data-action=toggle-reference-view]');
+                button.classList.toggle('active', !hidden);
+                button.setAttribute('aria-pressed', String(!hidden));
+                const label = hidden ? s.viewreference : s.hidereferenceview;
+                button.title = label; button.setAttribute('aria-label', label);
+                return;
+            }            if (action === 'reference-visibility') {
                 referenceVisible = await call('mod_studymark_set_reference_visibility', {
                     cmid: config.cmid, visible: !referenceVisible
                 });

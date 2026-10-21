@@ -118,6 +118,8 @@ $string['containshighlights'] = 'This section contains highlights';
 
 $string['showreference'] = 'Show tutor reference to learners';
 $string['hidereference'] = 'Hide tutor reference from learners';
+$string['viewreference'] = 'Show tutor highlighting';
+$string['hidereferenceview'] = 'Hide tutor highlighting';
 $string['referencemode'] = 'Use personal highlighting';
 $string['referencemodeactive'] = 'Reference highlighting mode is active; new highlights form part of the reference';
 $string['highlightcolor'] = 'Highlight colour';

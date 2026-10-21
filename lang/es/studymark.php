@@ -118,6 +118,8 @@ $string['containshighlights'] = 'Esta sección contiene subrayados';
 
 $string['showreference'] = 'Mostrar la referencia del tutor al alumnado';
 $string['hidereference'] = 'Ocultar la referencia del tutor al alumnado';
+$string['viewreference'] = 'Ver el subrayado del tutor';
+$string['hidereferenceview'] = 'Ocultar el subrayado del tutor';
 $string['referencemode'] = 'Usar subrayado personal';
 $string['referencemodeactive'] = 'El modo de referencia está activo; los nuevos subrayados formarán parte de la referencia';
 $string['highlightcolor'] = 'Color del subrayado';
