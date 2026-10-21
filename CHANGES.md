@@ -1,4 +1,17 @@
+## 0.14.1
+
+- Renamed tutor report metrics using plain educational language.
+- Added report guidance, per-student interpretation and an overall status badge.
+- Reports now sort learners by Balance (F1) by default.
+- Added a simple view that hides technical columns, with accessible explanations on metric headings.
+
 # Changes
+
+## 0.14.0
+
+- Made tutor reference highlights private to managers by default.
+- Added a persistent manager control to show or hide the reference for learners.
+- Prevented hidden reference intervals from being sent to learner browsers.
 
 ## 0.13.1
 

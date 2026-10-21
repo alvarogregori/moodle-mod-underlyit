@@ -208,3 +208,16 @@
 .studymark-match-legend .matched::before { background: #198754; }
 .studymark-match-legend .extra::before { background: #ffc107; }
 .studymark-match-legend .missing::before { background: #dc3545; }
+
+.studymark-report-guide { margin-bottom: 1rem; }
+.studymark-report-guide strong { display: block; margin-bottom: .5rem; }
+.studymark-report-guide ul { margin: 0 0 .35rem 1.25rem; padding: 0; }
+.studymark-report-controls { display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem; }
+.studymark-report-controls span { color: #6c757d; font-size: .875rem; }
+.studymark-technical-column { display: none; }
+.studymark-show-technical .studymark-technical-column { display: table-cell; }
+.studymark-column-heading { display: inline-flex; align-items: center; gap: .25rem; }
+.studymark-info { color: var(--primary, #0f6cbf); cursor: help; font-size: 1rem; line-height: 1; }
+.studymark-info:focus { outline: 2px solid var(--primary, #0f6cbf); outline-offset: 2px; }
+.studymark-student-name { display: block; margin-bottom: .35rem; }
+.studymark-student-interpretation { display: block; max-width: 18rem; margin-top: .45rem; color: #6c757d; font-weight: 400; line-height: 1.3; }

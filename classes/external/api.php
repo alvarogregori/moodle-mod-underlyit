@@ -113,13 +113,22 @@ final class api extends external_api {
     }
     public static function get_highlights(int $cmid, int $documentid, int $groupid = 0): array {
         global $DB, $USER;
-        [$cm, , $context, $document] = access::document($cmid, $documentid);
+        [$cm, $activity, $context, $document] = access::document($cmid, $documentid);
         $groupid = access::active_group($cm, $groupid);
-        $params = ['documentid' => $documentid, 'userid' => $USER->id, 'groupid' => $groupid];
+        $canmanage = has_capability('mod/studymark:manageannotations', $context);
+        $showreference = $canmanage || !empty($activity->showreference);
+        $params = [
+            'documentid' => $documentid,
+            'userid' => $USER->id,
+            'groupid' => $groupid,
+            'showreference' => (int)$showreference,
+        ];
         $sql = "SELECT h.*, u.firstname, u.lastname
                   FROM {studymark_highlight} h JOIN {user} u ON u.id = h.userid
                  WHERE h.documentid = :documentid
-                   AND (h.userid = :userid OR h.reference = 1 OR (h.shared = 1 AND h.groupid = :groupid))
+                   AND (h.userid = :userid
+                        OR (h.reference = 1 AND :showreference = 1)
+                        OR (h.shared = 1 AND h.groupid = :groupid))
               ORDER BY h.positionorder, h.id";
         return array_values(array_map(fn($h) => self::export_highlight($h, $context), $DB->get_records_sql($sql, $params)));
     }
@@ -191,6 +200,23 @@ final class api extends external_api {
         return new external_value(PARAM_BOOL, 'Saved');
     }
 
+    public static function set_reference_visibility_parameters(): external_function_parameters {
+        return new external_function_parameters([
+            'cmid' => new external_value(PARAM_INT, 'Course module ID'),
+            'visible' => new external_value(PARAM_BOOL, 'Whether learners may see the tutor reference'),
+        ]);
+    }
+    public static function set_reference_visibility(int $cmid, bool $visible): bool {
+        global $DB;
+        [, $activity, $context] = access::module($cmid);
+        require_capability('mod/studymark:manageannotations', $context);
+        $DB->set_field('studymark', 'showreference', (int)$visible, ['id' => $activity->id]);
+        return $visible;
+    }
+    public static function set_reference_visibility_returns(): external_value {
+        return new external_value(PARAM_BOOL, 'Saved reference visibility');
+    }
+
     public static function get_comments_parameters(): external_function_parameters {
         return new external_function_parameters(['cmid' => new external_value(PARAM_INT, 'CM ID'), 'documentid' => new external_value(PARAM_INT, 'Document ID'), 'groupid' => new external_value(PARAM_INT, 'Group ID', VALUE_DEFAULT, 0)]);
     }
@@ -214,9 +240,11 @@ final class api extends external_api {
         $groupid = access::active_group($cm, $groupid);
         if ($highlightid) {
             $highlight = $DB->get_record('studymark_highlight', ['id' => $highlightid, 'documentid' => $documentid], '*', MUST_EXIST);
-            $visible = (int)$highlight->userid === (int)$USER->id || !empty($highlight->reference) ||
-                (!empty($highlight->shared) && (int)$highlight->groupid === $groupid) ||
-                has_capability('mod/studymark:manageannotations', $context);
+            $canmanage = has_capability('mod/studymark:manageannotations', $context);
+            $activity = $DB->get_record('studymark', ['id' => $cm->instance], 'id,showreference', MUST_EXIST);
+            $referencevisible = !empty($highlight->reference) && ($canmanage || !empty($activity->showreference));
+            $visible = (int)$highlight->userid === (int)$USER->id || $referencevisible ||
+                (!empty($highlight->shared) && (int)$highlight->groupid === $groupid) || $canmanage;
             if (!$visible) { throw new \invalid_parameter_exception('Invalid highlight'); }
         }
         $record = (object) ['documentid' => $documentid, 'highlightid' => $highlightid ?: null, 'userid' => $USER->id, 'groupid' => $groupid, 'content' => trim($content), 'timecreated' => time(), 'timemodified' => time()];

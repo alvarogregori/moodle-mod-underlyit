@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/studymark/db" VERSION="2026101903" COMMENT="XMLDB file for mod_studymark">
+<XMLDB PATH="mod/studymark/db" VERSION="2026102106" COMMENT="XMLDB file for mod_studymark">
   <TABLES>
     <TABLE NAME="studymark" COMMENT="StudyMark activity instances">
       <FIELDS>
@@ -10,6 +10,7 @@
         <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0"/>
         <FIELD NAME="completionprogress" TYPE="int" LENGTH="3" NOTNULL="true" DEFAULT="0"/>
         <FIELD NAME="completionmatch" TYPE="int" LENGTH="3" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="showreference" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
       </FIELDS>

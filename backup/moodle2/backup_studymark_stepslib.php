@@ -3,7 +3,7 @@ defined('MOODLE_INTERNAL') || die();
 class backup_studymark_activity_structure_step extends backup_activity_structure_step {
     protected function define_structure() {
         $userinfo = $this->get_setting_value('userinfo');
-        $activity = new backup_nested_element('studymark', ['id'], ['name','intro','introformat','completionprogress','completionmatch','timecreated','timemodified']);
+        $activity = new backup_nested_element('studymark', ['id'], ['name','intro','introformat','completionprogress','completionmatch','showreference','timecreated','timemodified']);
         $documents = new backup_nested_element('documents');
         $document = new backup_nested_element('document', ['id'], ['userid','title','filename','mimetype','filesize','contenthash','textlength','timecreated','timemodified']);
         $highlights = new backup_nested_element('highlights');

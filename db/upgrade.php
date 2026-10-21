@@ -53,5 +53,13 @@ function xmldb_studymark_upgrade($oldversion) {
         }
         upgrade_mod_savepoint(true, 2026101903, 'studymark');
     }
+    if ($oldversion < 2026102106) {
+        $table = new xmldb_table('studymark');
+        $field = new xmldb_field('showreference', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'completionmatch');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_mod_savepoint(true, 2026102106, 'studymark');
+    }
     return true;
 }

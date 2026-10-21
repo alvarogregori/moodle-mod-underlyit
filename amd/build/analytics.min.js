@@ -34,7 +34,10 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/documentrea
             'documentlength', 'characters', 'student', 'highlights', 'detail', 'precision', 'recall', 'f1score', 'jaccard', 'nostudents',
             'calculationheading', 'progresscalculation', 'detailcalculation', 'precisioncalculation', 'recallcalculation', 'f1calculation', 'matchcalculation', 'progressestimate',
             'reporterror', 'extractingdocument', 'downloaddocumenterror', 'pdfjsunavailable', 'extractingpage', 'of',
-            'jszipunavailable', 'invalidepub', 'invaliddocx', 'statuslegend', 'matched', 'extra', 'missing', 'matchbreakdown'];
+            'jszipunavailable', 'invalidepub', 'invaliddocx', 'statuslegend', 'matched', 'extra', 'missing', 'matchbreakdown',
+            'reportguideheading', 'reportguiderelevance', 'reportguidecoverage', 'reportguidebalance', 'reportguideaverage',
+            'simpleview', 'showtechnical', 'hidetechnical', 'generalstatus', 'interpretationhigh', 'interpretationmedium',
+            'interpretationlow', 'interpretationnone', 'statusgood', 'statusdeveloping', 'statusreview', 'statusnodata'];
         const values = await Str.get_strings(keys.map(key => ({key, component: 'mod_studymark'})));
         return Object.fromEntries(keys.map((key, index) => [key, values[index]]));
     };
@@ -50,14 +53,32 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/documentrea
             if (!doc) { root.innerHTML = `<div class="alert alert-info">${escape(s.nodocument)}</div>`; return; }
             const reader = new DocumentReader({url: doc.url, filename: doc.filename, mimetype: doc.mimetype, workerUrl: config.pdfworkerurl, strings: s,
                 progress: message => { root.innerHTML = `<div class="studymark-analytics-loading">${escape(message)}</div>`; }});
-            const article = await reader.load();
+            await reader.load();
             const result = await call('mod_studymark_get_analytics', {cmid: config.cmid, documentid: doc.id});
-const referenceNote = result.hasreference
+            const referenceNote = result.hasreference
                 ? `${s.referencecontains} ${Number(result.referencechars).toLocaleString()} ${s.highlightedcharacters}`
                 : s.noreferencehelp;
             const comparisonCell = (value, label, delta) => result.hasreference ? bar(value, label, delta) : `<span class="text-muted">${escape(s.noreference)}</span>`;
-            const rows = result.students.map(student => `<tr><th scope="row">${escape(student.fullname)}</th><td>${student.highlightcount}</td><td>${bar(student.progress, s.readingreached, student.progressdifference, 'progress')}</td><td>${bar(student.detail, s.detaillevel, student.differencefromaverage)}</td><td>${comparisonCell(student.precision, s.precision, student.precisiondifference)}</td><td>${comparisonCell(student.recall, s.recall, student.recalldifference)}</td><td>${comparisonCell(student.f1score, s.f1score, student.f1difference)}</td><td>${result.hasreference ? matchBar(student) : `<span class="text-muted">${escape(s.noreference)}</span>`}</td></tr>`).join('');
-            root.innerHTML = `<section class="studymark-analytics-summary"><div><span>${escape(s.courseaveragedetail)}</span><strong>${percent(result.courseaverage)}</strong></div><div><span>${escape(s.documentlength)}</span><strong>${Number(result.documentchars).toLocaleString()} ${escape(s.characters)}</strong></div></section><div class="alert ${result.hasreference ? 'alert-light' : 'alert-warning'}">${escape(referenceNote)}</div><div class="table-responsive"><table class="table table-striped studymark-analytics-table"><thead><tr><th>${escape(s.student)}</th><th>${escape(s.highlights)}</th><th>${escape(s.readingreached)}</th><th>${escape(s.detail)}</th><th>${escape(s.precision)}</th><th>${escape(s.recall)}</th><th>${escape(s.f1score)}</th><th>${escape(s.jaccard)}</th></tr></thead><tbody>${rows || `<tr><td colspan="8" class="text-muted text-center">${escape(s.nostudents)}</td></tr>`}</tbody></table></div><details class="studymark-analytics-help"><summary>${escape(s.calculationheading)}</summary><ul><li><strong>${escape(s.readingreached)}:</strong> ${escape(s.progresscalculation)}</li><li><strong>${escape(s.detail)}:</strong> ${escape(s.detailcalculation)}</li><li><strong>${escape(s.precision)}:</strong> ${escape(s.precisioncalculation)}</li><li><strong>${escape(s.recall)}:</strong> ${escape(s.recallcalculation)}</li><li><strong>${escape(s.f1score)}:</strong> ${escape(s.f1calculation)}</li><li><strong>${escape(s.jaccard)}:</strong> ${escape(s.matchcalculation)}</li></ul><p>${escape(s.statuslegend)}</p><p>${escape(s.progressestimate)}</p></details>`;
+            const heading = (label, help) => `<span class="studymark-column-heading">${escape(label)} <span class="studymark-info" tabindex="0" title="${escape(help)}" aria-label="${escape(help)}">&#9432;</span></span>`;
+            const interpretation = student => {
+                if (!student.highlightcount) return {state: 'secondary', label: s.statusnodata, text: s.interpretationnone};
+                const score = Number(student.f1score) || 0;
+                return score >= 50 ? {state: 'success', label: s.statusgood, text: s.interpretationhigh}
+                    : (score >= 25 ? {state: 'warning', label: s.statusdeveloping, text: s.interpretationmedium}
+                        : {state: 'danger', label: s.statusreview, text: s.interpretationlow});
+            };
+            const students = [...result.students].sort((a, b) => (Number(b.f1score) || 0) - (Number(a.f1score) || 0));
+            const rows = students.map(student => {
+                const summary = interpretation(student);
+                return `<tr><th scope="row"><span class="studymark-student-name">${escape(student.fullname)}</span><span class="badge badge-${summary.state}">${escape(summary.label)}</span><small class="studymark-student-interpretation">${escape(summary.text)}</small></th><td>${student.highlightcount}</td><td>${bar(student.progress, s.readingreached, student.progressdifference, 'progress')}</td><td class="studymark-technical-column">${bar(student.detail, s.detaillevel, student.differencefromaverage)}</td><td>${comparisonCell(student.precision, s.precision, student.precisiondifference)}</td><td>${comparisonCell(student.recall, s.recall, student.recalldifference)}</td><td>${comparisonCell(student.f1score, s.f1score, student.f1difference)}</td><td class="studymark-technical-column">${result.hasreference ? matchBar(student) : `<span class="text-muted">${escape(s.noreference)}</span>`}</td></tr>`;
+            }).join('');
+            root.innerHTML = `<aside class="alert alert-info studymark-report-guide"><strong>${escape(s.reportguideheading)}</strong><ul><li>${escape(s.reportguiderelevance)}</li><li>${escape(s.reportguidecoverage)}</li><li>${escape(s.reportguidebalance)}</li></ul><small>${escape(s.reportguideaverage)}</small></aside><div class="studymark-report-controls"><button type="button" class="btn btn-outline-secondary btn-sm" data-action="toggle-technical" aria-pressed="false">${escape(s.showtechnical)}</button><span>${escape(s.simpleview)}</span></div><section class="studymark-analytics-summary"><div><span>${escape(s.courseaveragedetail)}</span><strong>${percent(result.courseaverage)}</strong></div><div><span>${escape(s.documentlength)}</span><strong>${Number(result.documentchars).toLocaleString()} ${escape(s.characters)}</strong></div></section><div class="alert ${result.hasreference ? 'alert-light' : 'alert-warning'}">${escape(referenceNote)}</div><div class="table-responsive"><table class="table table-striped studymark-analytics-table"><thead><tr><th>${escape(s.student)}</th><th>${escape(s.highlights)}</th><th>${heading(s.readingreached, s.progresscalculation)}</th><th class="studymark-technical-column">${heading(s.detail, s.detailcalculation)}</th><th>${heading(s.precision, s.precisioncalculation)}</th><th>${heading(s.recall, s.recallcalculation)}</th><th>${heading(s.f1score, s.f1calculation)}</th><th class="studymark-technical-column">${heading(s.jaccard, s.matchcalculation)}</th></tr></thead><tbody>${rows || `<tr><td colspan="8" class="text-muted text-center">${escape(s.nostudents)}</td></tr>`}</tbody></table></div><details class="studymark-analytics-help"><summary>${escape(s.calculationheading)}</summary><ul><li><strong>${escape(s.readingreached)}:</strong> ${escape(s.progresscalculation)}</li><li><strong>${escape(s.detail)}:</strong> ${escape(s.detailcalculation)}</li><li><strong>${escape(s.precision)}:</strong> ${escape(s.precisioncalculation)}</li><li><strong>${escape(s.recall)}:</strong> ${escape(s.recallcalculation)}</li><li><strong>${escape(s.f1score)}:</strong> ${escape(s.f1calculation)}</li><li><strong>${escape(s.jaccard)}:</strong> ${escape(s.matchcalculation)}</li></ul><p>${escape(s.statuslegend)}</p><p>${escape(s.progressestimate)}</p></details>`;
+            const technicalButton = root.querySelector('[data-action="toggle-technical"]');
+            technicalButton.addEventListener('click', () => {
+                const expanded = root.classList.toggle('studymark-show-technical');
+                technicalButton.setAttribute('aria-pressed', String(expanded));
+                technicalButton.textContent = expanded ? s.hidetechnical : s.showtechnical;
+            });
         } catch (error) { root.innerHTML = `<div class="alert alert-danger">${escape(s.reporterror)}</div>`; Notification.exception(error); }
     }
     return {init};

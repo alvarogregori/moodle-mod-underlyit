@@ -9,6 +9,7 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
         original: svg('M6 2h9l5 5v15H6V2m8 1.5V8h4.5L14 3.5M8 12v2h8v-2H8m0 4v2h8v-2H8'),
         exit: svg('M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5v-2H5V5h5V3m4.59 4.59L16 9l-3 3H7v2h6l3 3 1.41-1.41L16.83 15H21v-2h-4.17l.58-.59L16 11l-1.41 1.41L14 13h-1l3-3-1.41-1.41Z'),
         reference: svg('M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2'),
+        visibility: svg('M12 5c5.5 0 9.5 5.2 9.5 7s-4 7-9.5 7S2.5 13.8 2.5 12 6.5 5 12 5m0 2c-3.8 0-6.8 3.2-7.4 5 .6 1.8 3.6 5 7.4 5s6.8-3.2 7.4-5C18.8 10.2 15.8 7 12 7m0 1.5A3.5 3.5 0 1 1 8.5 12 3.5 3.5 0 0 1 12 8.5m0 2A1.5 1.5 0 1 0 13.5 12 1.5 1.5 0 0 0 12 10.5'),
         remove: svg('M6 7h12l-1 14H7L6 7m3-4h6l1 2h4v2H4V5h4l1-2'),
         analytics: svg('M3 3h2v18H3V3m4 10h3v8H7v-8m5-6h3v14h-3V7m5 3h3v11h-3V10'),
         fullscreen: svg('M4 4h6v2H6v4H4V4m10 0h6v6h-2V6h-4V4M4 14h2v4h4v2H4v-6m14 0h2v6h-6v-2h4v-4')
@@ -27,6 +28,7 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
             'nodocument', 'documentprocesserror', 'deletehighlightconfirm', 'extractingdocument', 'downloaddocumenterror',
             'pdfjsunavailable', 'extractingpage', 'of', 'jszipunavailable', 'invalidepub', 'invaliddocx',
             'hideoutline', 'showoutline', 'containshighlights', 'referencemode', 'referencemodeactive',
+            'showreference', 'hidereference',
             'highlightcolor', 'yellow', 'blue', 'green', 'pink', 'orange', 'selectedcolor',
             'deletehighlight', 'selectedhighlight'];
         const values = await Str.get_strings(keys.map(key => ({key, component: 'mod_studymark'})));
@@ -50,7 +52,7 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
             `<button type="button" class="btn btn-icon btn-outline-secondary" data-action="toggle-outline" aria-expanded="true" aria-label="${escape(s.hideoutline)}" title="${escape(s.hideoutline)}">${icons.outline}</button>` +
             `<button type="button" class="btn btn-icon btn-outline-secondary" data-action="summary" disabled aria-label="${escape(s.summaryreading)}" title="${escape(s.summaryreading)}">${icons.summary}</button>` +
             `<a class="btn btn-icon btn-outline-secondary" data-action="original" href="#" target="_blank" rel="noopener" aria-label="${escape(s.originaldocument)}" title="${escape(s.originaldocument)}">${icons.original}</a>` +
-            (config.canmanage ? `<button type="button" class="btn btn-icon btn-outline-secondary active" data-action="reference" aria-pressed="true" aria-label="${escape(s.referencemodeactive)}" title="${escape(s.referencemodeactive)}">${icons.reference}</button><a class="btn btn-icon btn-outline-secondary" href="${config.reporturl}" aria-label="${escape(s.analytics)}" title="${escape(s.analytics)}">${icons.analytics}</a>` : '') +
+            (config.canmanage ? `<button type="button" class="btn btn-icon btn-outline-secondary active" data-action="reference" aria-pressed="true" aria-label="${escape(s.referencemodeactive)}" title="${escape(s.referencemodeactive)}">${icons.reference}</button><button type="button" class="btn btn-icon btn-outline-secondary ${config.showreference ? 'active' : ''}" data-action="reference-visibility" aria-pressed="${String(Boolean(config.showreference))}" aria-label="${escape(config.showreference ? s.hidereference : s.showreference)}" title="${escape(config.showreference ? s.hidereference : s.showreference)}">${icons.visibility}</button><a class="btn btn-icon btn-outline-secondary" href="${config.reporturl}" aria-label="${escape(s.analytics)}" title="${escape(s.analytics)}">${icons.analytics}</a>` : '') +
             `<a class="btn btn-icon btn-outline-secondary" href="${config.courseurl}" aria-label="${escape(s.exittocourse)}" title="${escape(s.exittocourse)}">${icons.exit}</a>` +
             `<button type="button" class="btn btn-icon btn-outline-secondary" data-action="toggle-focus" aria-label="${escape(s.togglefullscreen)}" title="${escape(s.togglefullscreen)}">${icons.fullscreen}</button>` +
             `</div></nav><div class="studymark-layout"><nav class="studymark-outline" aria-label="${escape(s.documentoutline)}"><h2>${escape(s.outline)}</h2><div data-region="outline"></div></nav><main class="studymark-reader"><div data-region="viewer" class="studymark-empty">${escape(s.loadingdocument)}</div></main></div>`;
@@ -64,6 +66,7 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
         let readingArticle = null;
         let summaryMode = false;
         let referenceMode = Boolean(config.canmanage);
+        let referenceVisible = Boolean(config.showreference);
         let highlightColor = '#fff176';
         let selectedHighlightId = null;
 
@@ -258,6 +261,17 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
                 });
                 highlights = highlights.filter(item => +item.id !== id);
                 clearSelectedHighlight(); renderMode(); updateOutlineHighlights();
+                return;
+            }
+            if (action === 'reference-visibility') {
+                referenceVisible = await call('mod_studymark_set_reference_visibility', {
+                    cmid: config.cmid, visible: !referenceVisible
+                });
+                const button = root.querySelector('[data-action=reference-visibility]');
+                button.classList.toggle('active', referenceVisible);
+                button.setAttribute('aria-pressed', String(referenceVisible));
+                const label = referenceVisible ? s.hidereference : s.showreference;
+                button.title = label; button.setAttribute('aria-label', label);
                 return;
             }
             if (action === 'reference') {

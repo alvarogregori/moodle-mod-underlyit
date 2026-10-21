@@ -24,6 +24,7 @@ $PAGE->requires->js_call_amd('mod_studymark/app', 'init', [[
     'canhighlight' => has_capability('mod/studymark:addhighlight', $context),
     'cancomment' => has_capability('mod/studymark:addcomment', $context),
     'canmanage' => has_capability('mod/studymark:manageannotations', $context),
+    'showreference' => !empty($activity->showreference),
     'reporturl' => (new moodle_url('/mod/studymark/report.php', ['id' => $cm->id]))->out(false),
     'pdfworkerurl' => (new moodle_url('/mod/studymark/thirdparty/pdfjs/pdf.worker.min.js'))->out(false),
     'courseurl' => (new moodle_url('/course/view.php', ['id' => $course->id]))->out(false),
