@@ -62,22 +62,46 @@ final class analytics extends external_api {
                 'progress' => round(100 * $furthest / $totalchars, 1),
                 'detail' => round(100 * $covered / $totalchars, 1),
                 'differencefromaverage' => 0.0,
+                'progressdifference' => 0.0,
+                'precisiondifference' => 0.0,
+                'recalldifference' => 0.0,
+                'f1difference' => 0.0,
+                'jaccarddifference' => 0.0,
                 'precision' => round($comparison['precision'], 1),
                 'recall' => round($comparison['recall'], 1),
                 'f1score' => round($comparison['f1score'], 1),
                 'referenceoverlap' => round($comparison['jaccard'], 1),
+                'intersectionchars' => $comparison['intersection'],
+                'studentonlychars' => $comparison['studentchars'] - $comparison['intersection'],
+                'referenceonlychars' => $comparison['referencechars'] - $comparison['intersection'],
             ];
         }
-        $average = $rows ? array_sum(array_column($rows, 'detail')) / count($rows) : 0.0;
+        $metricmap = [
+            'progress' => 'progressdifference',
+            'detail' => 'differencefromaverage',
+            'precision' => 'precisiondifference',
+            'recall' => 'recalldifference',
+            'f1score' => 'f1difference',
+            'referenceoverlap' => 'jaccarddifference',
+        ];
+        $averages = [];
+        foreach ($metricmap as $metric => $difference) {
+            $averages[$metric] = $rows
+                ? round(array_sum(array_column($rows, $metric)) / count($rows), 1)
+                : 0.0;
+        }
         foreach ($rows as &$row) {
-            $row['differencefromaverage'] = round($row['detail'] - $average, 1);
+            foreach ($metricmap as $metric => $difference) {
+                $row[$difference] = round($row[$metric] - $averages[$metric], 1);
+            }
         }
         unset($row);
         return [
             'documentchars' => $totalchars,
             'referencechars' => metrics::length($reference),
             'hasreference' => !empty($reference),
-            'courseaverage' => round($average, 1),
+            'courseaverage' => $averages['detail'],
+            'courseaverages' => $averages,
             'students' => $rows,
         ];
     }
@@ -88,17 +112,33 @@ final class analytics extends external_api {
             'referencechars' => new external_value(PARAM_INT, 'Reference highlighted characters'),
             'hasreference' => new external_value(PARAM_BOOL, 'Whether a reference exists'),
             'courseaverage' => new external_value(PARAM_FLOAT, 'Course mean detail percentage'),
+            'courseaverages' => new external_single_structure([
+                'progress' => new external_value(PARAM_FLOAT, 'Course mean reached percentage'),
+                'detail' => new external_value(PARAM_FLOAT, 'Course mean detail percentage'),
+                'precision' => new external_value(PARAM_FLOAT, 'Course mean precision'),
+                'recall' => new external_value(PARAM_FLOAT, 'Course mean recall'),
+                'f1score' => new external_value(PARAM_FLOAT, 'Course mean F1-score'),
+                'referenceoverlap' => new external_value(PARAM_FLOAT, 'Course mean Jaccard overlap'),
+            ]),
             'students' => new external_multiple_structure(new external_single_structure([
                 'userid' => new external_value(PARAM_INT, 'User ID'),
                 'fullname' => new external_value(PARAM_TEXT, 'Full name'),
                 'highlightcount' => new external_value(PARAM_INT, 'Highlight count'),
                 'progress' => new external_value(PARAM_FLOAT, 'Reached percentage'),
                 'detail' => new external_value(PARAM_FLOAT, 'Highlighted percentage'),
-                'differencefromaverage' => new external_value(PARAM_FLOAT, 'Difference from course mean'),
+                'differencefromaverage' => new external_value(PARAM_FLOAT, 'Detail difference from course mean'),
+                'progressdifference' => new external_value(PARAM_FLOAT, 'Progress difference from course mean'),
+                'precisiondifference' => new external_value(PARAM_FLOAT, 'Precision difference from course mean'),
+                'recalldifference' => new external_value(PARAM_FLOAT, 'Recall difference from course mean'),
+                'f1difference' => new external_value(PARAM_FLOAT, 'F1 difference from course mean'),
+                'jaccarddifference' => new external_value(PARAM_FLOAT, 'Jaccard difference from course mean'),
                 'precision' => new external_value(PARAM_FLOAT, 'Precision against reference'),
                 'recall' => new external_value(PARAM_FLOAT, 'Recall against reference'),
                 'f1score' => new external_value(PARAM_FLOAT, 'Harmonic mean of precision and recall'),
                 'referenceoverlap' => new external_value(PARAM_FLOAT, 'Jaccard overlap with reference'),
+                'intersectionchars' => new external_value(PARAM_INT, 'Characters in the intersection'),
+                'studentonlychars' => new external_value(PARAM_INT, 'Student-only highlighted characters'),
+                'referenceonlychars' => new external_value(PARAM_INT, 'Reference-only highlighted characters'),
             ])),
         ]);
     }

@@ -1,5 +1,11 @@
 # Changes
 
+## 0.13.0
+
+- Added traffic-light status badges and position markers to tutor-report metrics.
+- Added course-average comparisons for progress, detail, Precision, Recall, F1 and Jaccard.
+- Added a Jaccard breakdown showing matched, extra and missing highlighted characters.
+
 ## 0.12.1
 
 - Enabled explicit reference highlighting mode by default for managers.
