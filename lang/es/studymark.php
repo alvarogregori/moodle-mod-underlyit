@@ -88,4 +88,11 @@ $string['showoutline'] = 'Mostrar índice del documento';
 $string['containshighlights'] = 'Esta sección contiene subrayados';
 
 $string['referencemode'] = 'Modo de subrayado de referencia';
-$string['referencemodeactive'] = 'El modo de subrayado de referencia est? activo';
+$string['referencemodeactive'] = 'El modo de subrayado de referencia está activo';
+$string['highlightcolor'] = 'Color del subrayado';
+$string['selectedcolor'] = 'Color seleccionado';
+$string['yellow'] = 'Amarillo';
+$string['blue'] = 'Azul';
+$string['green'] = 'Verde';
+$string['pink'] = 'Rosa';
+$string['orange'] = 'Naranja';

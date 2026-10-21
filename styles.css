@@ -46,3 +46,136 @@
 .studymark-outline-link.has-highlights .studymark-outline-marker { background:#fff176; box-shadow:inset 0 0 0 1px rgba(120,100,0,.14); }
 .mod-studymark-app.studymark-outline-collapsed .studymark-layout { grid-template-columns:minmax(0,1fr); }
 .mod-studymark-app.studymark-outline-collapsed .studymark-outline { display:none; }
+
+/* Reader workspace and highlight palette. */
+.mod-studymark-app {
+    --studymark-surface: var(--bs-body-bg, #fff);
+    --studymark-subtle: var(--bs-tertiary-bg, #f8f9fa);
+    --studymark-border: var(--bs-border-color, #dee2e6);
+    --studymark-primary: var(--bs-primary, #0f6cbf);
+}
+.studymark-reader-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 12;
+    justify-content: space-between;
+    min-height: 3.35rem;
+    padding: .5rem .75rem;
+    margin: 0;
+    border: 1px solid var(--studymark-border);
+    border-bottom: 0;
+    border-radius: .65rem .65rem 0 0;
+    background: color-mix(in srgb, var(--studymark-surface) 96%, transparent);
+    box-shadow: 0 .2rem .8rem rgba(16, 24, 40, .06);
+    backdrop-filter: blur(8px);
+}
+.studymark-toolbar-actions,
+.studymark-color-picker {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+}
+.studymark-toolbar-actions { justify-content: flex-end; }
+.studymark-color-picker {
+    min-height: 2.3rem;
+    padding: .25rem .45rem;
+    border: 1px solid var(--studymark-border);
+    border-radius: 999px;
+    background: var(--studymark-subtle);
+}
+.studymark-color-picker-label {
+    margin: 0 .2rem 0 .15rem;
+    color: var(--bs-secondary-color, #6c757d);
+    font-size: .78rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.studymark-color-swatch {
+    display: inline-grid;
+    width: 1.65rem;
+    height: 1.65rem;
+    padding: .22rem;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    place-items: center;
+}
+.studymark-color-swatch span {
+    width: 1.05rem;
+    height: 1.05rem;
+    border: 1px solid rgba(0, 0, 0, .12);
+    border-radius: 50%;
+    background: var(--studymark-swatch);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
+}
+.studymark-color-swatch:hover,
+.studymark-color-swatch:focus-visible { background: var(--bs-secondary-bg, #e9ecef); outline: 0; }
+.studymark-color-swatch.active,
+.studymark-color-swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--studymark-primary); }
+.studymark-reader-toolbar .btn-icon {
+    border-color: transparent;
+    color: var(--bs-secondary-color, #495057);
+}
+.studymark-reader-toolbar .btn-icon:hover,
+.studymark-reader-toolbar .btn-icon:focus-visible,
+.studymark-reader-toolbar .btn-icon.active {
+    border-color: color-mix(in srgb, var(--studymark-primary) 24%, transparent);
+    background: color-mix(in srgb, var(--studymark-primary) 11%, transparent);
+    color: var(--studymark-primary);
+}
+.mod-studymark-app .studymark-layout {
+    border: 1px solid var(--studymark-border);
+    border-radius: 0 0 .65rem .65rem;
+    background: var(--studymark-surface);
+}
+.studymark-outline {
+    padding: 1.15rem .8rem;
+    background: var(--studymark-surface);
+}
+.studymark-outline h2 {
+    padding: 0 .5rem .45rem;
+    color: var(--bs-secondary-color, #6c757d);
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+.studymark-outline-link { margin-bottom: .1rem; padding-top: .42rem; padding-bottom: .42rem; color: var(--bs-secondary-color, #495057); }
+.studymark-outline-link.level-1,
+.studymark-outline-link.level-2 { color: var(--bs-body-color, #212529); font-weight: 600; }
+.studymark-outline-link.has-highlights { background: linear-gradient(90deg, color-mix(in srgb, #90caf9 35%, transparent), transparent 82%); }
+.studymark-outline-link.has-highlights .studymark-outline-marker { width: .45rem; height: .45rem; border-radius: 50%; background: var(--studymark-primary); }
+.studymark-reading-host { background: var(--studymark-subtle); }
+.studymark-reading-document {
+    max-width: 54rem;
+    padding: clamp(2rem, 5.5vw, 4.75rem);
+    color: var(--bs-body-color, #252a34);
+    font-family: var(--bs-body-font-family, system-ui, sans-serif);
+    font-size: 1.05rem;
+    line-height: 1.78;
+    box-shadow: 0 0 1.25rem rgba(16, 24, 40, .055);
+}
+.studymark-reading-document h1,
+.studymark-reading-document h2,
+.studymark-reading-document h3,
+.studymark-reading-document h4,
+.studymark-reading-document h5,
+.studymark-reading-document h6 { color: var(--bs-heading-color, inherit); letter-spacing: -.015em; }
+.studymark-reading-document mark[data-highlight-id] {
+    padding: .04em .08em;
+    border-radius: .18em;
+    color: inherit;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+}
+.mod-studymark-app.studymark-focus .studymark-reader-toolbar { border: 0; border-bottom: 1px solid var(--studymark-border); border-radius: 0; }
+@media (max-width: 800px) {
+    .studymark-reader-toolbar { align-items: stretch; flex-direction: column; }
+    .studymark-color-picker { align-self: center; }
+    .studymark-toolbar-actions { justify-content: center; }
+}
+@media (max-width: 480px) {
+    .studymark-color-picker-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+    .studymark-reader-toolbar { padding: .4rem; }
+    .studymark-reading-document { padding: 1.35rem; font-size: 1rem; line-height: 1.68; }
+}

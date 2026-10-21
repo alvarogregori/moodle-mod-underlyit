@@ -12,13 +12,21 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
         analytics: svg('M3 3h2v18H3V3m4 10h3v8H7v-8m5-6h3v14h-3V7m5 3h3v11h-3V10'),
         fullscreen: svg('M4 4h6v2H6v4H4V4m10 0h6v6h-2V6h-4V4M4 14h2v4h4v2H4v-6m14 0h2v6h-6v-2h4v-4')
     };
+    const highlightColors = [
+        {value: '#fff176', key: 'yellow'},
+        {value: '#90caf9', key: 'blue'},
+        {value: '#a5d6a7', key: 'green'},
+        {value: '#f8bbd0', key: 'pink'},
+        {value: '#ffcc80', key: 'orange'}
+    ];
 
     const loadStrings = async() => {
         const keys = ['readertools', 'summaryreading', 'fullreading', 'originaldocument', 'analytics', 'exittocourse',
             'togglefullscreen', 'documentoutline', 'outline', 'loadingdocument', 'noheadings', 'nosummaryhighlights',
             'nodocument', 'documentprocesserror', 'deletehighlightconfirm', 'extractingdocument', 'downloaddocumenterror',
             'pdfjsunavailable', 'extractingpage', 'of', 'jszipunavailable', 'invalidepub', 'invaliddocx',
-            'hideoutline', 'showoutline', 'containshighlights', 'referencemode', 'referencemodeactive'];
+            'hideoutline', 'showoutline', 'containshighlights', 'referencemode', 'referencemodeactive',
+            'highlightcolor', 'yellow', 'blue', 'green', 'pink', 'orange', 'selectedcolor'];
         const values = await Str.get_strings(keys.map(key => ({key, component: 'mod_studymark'})));
         return Object.fromEntries(keys.map((key, index) => [key, values[index]]));
     };
@@ -27,14 +35,21 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
         const s = await loadStrings();
         const root = document.getElementById('studymark-app');
         if (window.matchMedia('(max-width: 700px)').matches) root.classList.add('studymark-focus');
+        const palette = highlightColors.map(color => `<button type="button" class="studymark-color-swatch" ` +
+            `data-highlight-color="${color.value}" aria-pressed="${color.value === '#fff176'}" ` +
+            `aria-label="${escape(s[color.key])}" title="${escape(s[color.key])}" ` +
+            `style="--studymark-swatch:${color.value}"><span aria-hidden="true"></span></button>`).join('');
         root.innerHTML = `<nav class="studymark-reader-toolbar" aria-label="${escape(s.readertools)}">` +
+            (config.canhighlight ? `<div class="studymark-color-picker" role="group" aria-label="${escape(s.highlightcolor)}">` +
+                `<span class="studymark-color-picker-label">${escape(s.highlightcolor)}</span>${palette}</div>` : '') +
+            `<div class="studymark-toolbar-actions">` +
             `<button type="button" class="btn btn-icon btn-outline-secondary" data-action="toggle-outline" aria-expanded="true" aria-label="${escape(s.hideoutline)}" title="${escape(s.hideoutline)}">${icons.outline}</button>` +
             `<button type="button" class="btn btn-icon btn-outline-secondary" data-action="summary" disabled aria-label="${escape(s.summaryreading)}" title="${escape(s.summaryreading)}">${icons.summary}</button>` +
             `<a class="btn btn-icon btn-outline-secondary" data-action="original" href="#" target="_blank" rel="noopener" aria-label="${escape(s.originaldocument)}" title="${escape(s.originaldocument)}">${icons.original}</a>` +
             (config.canmanage ? `<button type="button" class="btn btn-icon btn-outline-secondary" data-action="reference" aria-pressed="false" aria-label="${escape(s.referencemode)}" title="${escape(s.referencemode)}">${icons.reference}</button><a class="btn btn-icon btn-outline-secondary" href="${config.reporturl}" aria-label="${escape(s.analytics)}" title="${escape(s.analytics)}">${icons.analytics}</a>` : '') +
             `<a class="btn btn-icon btn-outline-secondary" href="${config.courseurl}" aria-label="${escape(s.exittocourse)}" title="${escape(s.exittocourse)}">${icons.exit}</a>` +
             `<button type="button" class="btn btn-icon btn-outline-secondary" data-action="toggle-focus" aria-label="${escape(s.togglefullscreen)}" title="${escape(s.togglefullscreen)}">${icons.fullscreen}</button>` +
-            `</nav><div class="studymark-layout"><nav class="studymark-outline" aria-label="${escape(s.documentoutline)}"><h2>${escape(s.outline)}</h2><div data-region="outline"></div></nav><main class="studymark-reader"><div data-region="viewer" class="studymark-empty">${escape(s.loadingdocument)}</div></main></div>`;
+            `</div></nav><div class="studymark-layout"><nav class="studymark-outline" aria-label="${escape(s.documentoutline)}"><h2>${escape(s.outline)}</h2><div data-region="outline"></div></nav><main class="studymark-reader"><div data-region="viewer" class="studymark-empty">${escape(s.loadingdocument)}</div></main></div>`;
         const viewer = root.querySelector('[data-region=viewer]');
         const outline = root.querySelector('[data-region=outline]');
         const summaryButton = root.querySelector('[data-action=summary]');
@@ -45,6 +60,7 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
         let readingArticle = null;
         let summaryMode = false;
         let referenceMode = false;
+        let highlightColor = '#fff176';
 
         function renderOutline() {
             const headings = Array.from(readingArticle.querySelectorAll('h1,h2,h3,h4,h5,h6')).filter(heading => !/^\d+$/.test(heading.textContent.trim()));
@@ -156,6 +172,7 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
                 });
                 highlights.push(saved); highlighter.apply([saved]); updateOutlineHighlights();
             } : null);
+            highlighter.setColor(highlightColor);
             highlighter.apply(highlights);
             renderOutline(); summaryButton.disabled = false; renderMode();
         }
@@ -172,6 +189,18 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
         }
 
         root.addEventListener('click', async event => {
+            const colorButton = event.target.closest('[data-highlight-color]');
+            if (colorButton) {
+                highlightColor = colorButton.dataset.highlightColor;
+                root.querySelectorAll('[data-highlight-color]').forEach(button => {
+                    const selected = button === colorButton;
+                    button.classList.toggle('active', selected);
+                    button.setAttribute('aria-pressed', String(selected));
+                    button.title = selected ? `${s.selectedcolor}: ${button.getAttribute('aria-label')}` : button.getAttribute('aria-label');
+                });
+                highlighter?.setColor(highlightColor);
+                return;
+            }
             const action = event.target.closest('[data-action]')?.dataset.action;
             if (action === 'toggle-focus') { root.classList.toggle('studymark-focus'); return; }
             if (action === 'toggle-outline') { root.classList.toggle('studymark-outline-collapsed'); updateOutlineButton(); return; }

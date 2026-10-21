@@ -3,10 +3,12 @@ define([], function() {
         constructor(container, onSave) {
             this.container = container;
             this.onSave = onSave;
+            this.color = '#fff176';
             this.mouseup = this.handleSelection.bind(this);
             container.addEventListener('mouseup', this.mouseup);
         }
         destroy() { this.container.removeEventListener('mouseup', this.mouseup); }
+        setColor(color) { this.color = color; }
         offsets(range) {
             const before = document.createRange();
             before.selectNodeContents(this.container);
@@ -24,7 +26,7 @@ define([], function() {
                     element(range.endContainer)?.closest('mark[data-highlight-id]')) return;
             const text = selection.toString().trim();
             if (!text) return;
-            this.onSave({selectedtext: text, selectorjson: JSON.stringify(this.offsets(range)), color: '#fff176', positionorder: this.offsets(range).start});
+            this.onSave({selectedtext: text, selectorjson: JSON.stringify(this.offsets(range)), color: this.color, positionorder: this.offsets(range).start});
             selection.removeAllRanges();
         }
         apply(items) {

@@ -1,5 +1,11 @@
 # Changes
 
+## 0.11.0
+
+- Added an accessible five-colour highlight palette for new annotations.
+- Refined the reader toolbar, outline and typography using Moodle/Bootstrap theme variables.
+- Improved responsive toolbar behaviour on tablets and phones.
+
 ## 0.10.0
 
 - Fixed Moodle custom completion rule discovery and descriptions.

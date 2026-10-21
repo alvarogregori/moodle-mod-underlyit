@@ -89,3 +89,10 @@ $string['containshighlights'] = 'This section contains highlights';
 
 $string['referencemode'] = 'Reference highlighting mode';
 $string['referencemodeactive'] = 'Reference highlighting mode is active';
+$string['highlightcolor'] = 'Highlight colour';
+$string['selectedcolor'] = 'Selected colour';
+$string['yellow'] = 'Yellow';
+$string['blue'] = 'Blue';
+$string['green'] = 'Green';
+$string['pink'] = 'Pink';
+$string['orange'] = 'Orange';
