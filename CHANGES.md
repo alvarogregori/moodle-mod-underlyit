@@ -1,5 +1,11 @@
 # Changes
 
+## 0.12.0
+
+- Added Precision, Recall and F1-score to the tutor analytics report.
+- Centralised comparison formulas and added deterministic test coverage.
+- Kept the existing Jaccard reference match as a separate metric and completion criterion.
+
 ## 0.11.1
 
 - Existing editable highlights can now be selected and recoloured from the palette.

@@ -29,12 +29,10 @@ final class metrics {
         }
         $student = self::merge_intervals($student);
         $reference = self::merge_intervals($reference);
-        $covered = self::length($student);
-        $intersection = self::intersection_length($student, $reference);
-        $union = $covered + self::length($reference) - $intersection;
+        $comparison = self::comparison_scores($student, $reference);
         return [
             'progress' => round(100 * ($student ? max(array_column($student, 1)) : 0) / $totalchars, 1),
-            'match' => $reference && $union ? round(100 * $intersection / $union, 1) : 0.0,
+            'match' => round($comparison['jaccard'], 1),
             'hasreference' => !empty($reference),
         ];
     }
@@ -65,5 +63,29 @@ final class metrics {
             if ($left[$i][1] < $right[$j][1]) { $i++; } else { $j++; }
         }
         return $length;
+    }
+
+    public static function comparison_scores(array $student, array $reference): array {
+        $student = self::merge_intervals($student);
+        $reference = self::merge_intervals($reference);
+        $studentchars = self::length($student);
+        $referencechars = self::length($reference);
+        $intersection = self::intersection_length($student, $reference);
+        $precision = $studentchars ? 100 * $intersection / $studentchars : 0.0;
+        $recall = $referencechars ? 100 * $intersection / $referencechars : 0.0;
+        $f1score = ($precision + $recall) > 0
+            ? 2 * $precision * $recall / ($precision + $recall)
+            : 0.0;
+        $union = $studentchars + $referencechars - $intersection;
+
+        return [
+            'studentchars' => $studentchars,
+            'referencechars' => $referencechars,
+            'intersection' => $intersection,
+            'precision' => $precision,
+            'recall' => $recall,
+            'f1score' => $f1score,
+            'jaccard' => $union ? 100 * $intersection / $union : 0.0,
+        ];
     }
 }

@@ -54,8 +54,7 @@ final class analytics extends external_api {
             $intervals = $byuser[$participant->id] ?? [];
             $covered = metrics::length($intervals);
             $furthest = $intervals ? max(array_column($intervals, 1)) : 0;
-            $intersection = metrics::intersection_length($intervals, $reference);
-            $union = $covered + metrics::length($reference) - $intersection;
+            $comparison = metrics::comparison_scores($intervals, $reference);
             $rows[] = [
                 'userid' => (int)$participant->id,
                 'fullname' => fullname($participant),
@@ -63,7 +62,10 @@ final class analytics extends external_api {
                 'progress' => round(100 * $furthest / $totalchars, 1),
                 'detail' => round(100 * $covered / $totalchars, 1),
                 'differencefromaverage' => 0.0,
-                'referenceoverlap' => $reference && $union ? round(100 * $intersection / $union, 1) : 0.0,
+                'precision' => round($comparison['precision'], 1),
+                'recall' => round($comparison['recall'], 1),
+                'f1score' => round($comparison['f1score'], 1),
+                'referenceoverlap' => round($comparison['jaccard'], 1),
             ];
         }
         $average = $rows ? array_sum(array_column($rows, 'detail')) / count($rows) : 0.0;
@@ -93,6 +95,9 @@ final class analytics extends external_api {
                 'progress' => new external_value(PARAM_FLOAT, 'Reached percentage'),
                 'detail' => new external_value(PARAM_FLOAT, 'Highlighted percentage'),
                 'differencefromaverage' => new external_value(PARAM_FLOAT, 'Difference from course mean'),
+                'precision' => new external_value(PARAM_FLOAT, 'Precision against reference'),
+                'recall' => new external_value(PARAM_FLOAT, 'Recall against reference'),
+                'f1score' => new external_value(PARAM_FLOAT, 'Harmonic mean of precision and recall'),
                 'referenceoverlap' => new external_value(PARAM_FLOAT, 'Jaccard overlap with reference'),
             ])),
         ]);
