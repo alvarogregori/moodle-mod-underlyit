@@ -96,3 +96,4 @@ $string['blue'] = 'Blue';
 $string['green'] = 'Green';
 $string['pink'] = 'Pink';
 $string['orange'] = 'Orange';
+$string['deletehighlight'] = 'Delete selected highlight';

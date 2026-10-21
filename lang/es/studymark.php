@@ -96,3 +96,4 @@ $string['blue'] = 'Azul';
 $string['green'] = 'Verde';
 $string['pink'] = 'Rosa';
 $string['orange'] = 'Naranja';
+$string['deletehighlight'] = 'Eliminar el subrayado seleccionado';

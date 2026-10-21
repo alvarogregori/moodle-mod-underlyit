@@ -9,6 +9,7 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
         original: svg('M6 2h9l5 5v15H6V2m8 1.5V8h4.5L14 3.5M8 12v2h8v-2H8m0 4v2h8v-2H8'),
         exit: svg('M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5v-2H5V5h5V3m4.59 4.59L16 9l-3 3H7v2h6l3 3 1.41-1.41L16.83 15H21v-2h-4.17l.58-.59L16 11l-1.41 1.41L14 13h-1l3-3-1.41-1.41Z'),
         reference: svg('M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2'),
+        remove: svg('M6 7h12l-1 14H7L6 7m3-4h6l1 2h4v2H4V5h4l1-2'),
         analytics: svg('M3 3h2v18H3V3m4 10h3v8H7v-8m5-6h3v14h-3V7m5 3h3v11h-3V10'),
         fullscreen: svg('M4 4h6v2H6v4H4V4m10 0h6v6h-2V6h-4V4M4 14h2v4h4v2H4v-6m14 0h2v6h-6v-2h4v-4')
     };
@@ -26,7 +27,8 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
             'nodocument', 'documentprocesserror', 'deletehighlightconfirm', 'extractingdocument', 'downloaddocumenterror',
             'pdfjsunavailable', 'extractingpage', 'of', 'jszipunavailable', 'invalidepub', 'invaliddocx',
             'hideoutline', 'showoutline', 'containshighlights', 'referencemode', 'referencemodeactive',
-            'highlightcolor', 'yellow', 'blue', 'green', 'pink', 'orange', 'selectedcolor'];
+            'highlightcolor', 'yellow', 'blue', 'green', 'pink', 'orange', 'selectedcolor',
+            'deletehighlight', 'selectedhighlight'];
         const values = await Str.get_strings(keys.map(key => ({key, component: 'mod_studymark'})));
         return Object.fromEntries(keys.map((key, index) => [key, values[index]]));
     };
@@ -41,7 +43,9 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
             `style="--studymark-swatch:${color.value}"><span aria-hidden="true"></span></button>`).join('');
         root.innerHTML = `<nav class="studymark-reader-toolbar" aria-label="${escape(s.readertools)}">` +
             (config.canhighlight ? `<div class="studymark-color-picker" role="group" aria-label="${escape(s.highlightcolor)}">` +
-                `<span class="studymark-color-picker-label">${escape(s.highlightcolor)}</span>${palette}</div>` : '') +
+                `<span class="studymark-color-picker-label">${escape(s.highlightcolor)}</span>${palette}` +
+                `<button type="button" class="studymark-highlight-delete" data-action="delete-highlight" ` +
+                `aria-label="${escape(s.deletehighlight)}" title="${escape(s.deletehighlight)}" hidden disabled>${icons.remove}</button></div>` : '') +
             `<div class="studymark-toolbar-actions">` +
             `<button type="button" class="btn btn-icon btn-outline-secondary" data-action="toggle-outline" aria-expanded="true" aria-label="${escape(s.hideoutline)}" title="${escape(s.hideoutline)}">${icons.outline}</button>` +
             `<button type="button" class="btn btn-icon btn-outline-secondary" data-action="summary" disabled aria-label="${escape(s.summaryreading)}" title="${escape(s.summaryreading)}">${icons.summary}</button>` +
@@ -61,6 +65,36 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
         let summaryMode = false;
         let referenceMode = false;
         let highlightColor = '#fff176';
+        let selectedHighlightId = null;
+
+        function syncPalette(color) {
+            root.querySelectorAll('[data-highlight-color]').forEach(button => {
+                const selected = button.dataset.highlightColor === color;
+                button.classList.toggle('active', selected);
+                button.setAttribute('aria-pressed', String(selected));
+                button.title = selected ? `${s.selectedcolor}: ${button.getAttribute('aria-label')}` : button.getAttribute('aria-label');
+            });
+        }
+
+        function selectHighlight(record) {
+            if (!record?.canedit) return;
+            selectedHighlightId = +record.id;
+            highlightColor = record.color;
+            highlighter?.setColor(highlightColor);
+            syncPalette(highlightColor);
+            readingArticle.querySelectorAll('mark[data-highlight-id]').forEach(mark =>
+                mark.classList.toggle('studymark-highlight-selected', +mark.dataset.highlightId === selectedHighlightId));
+            const deleteButton = root.querySelector('[data-action=delete-highlight]');
+            if (deleteButton) { deleteButton.hidden = false; deleteButton.disabled = false; }
+        }
+
+        function clearSelectedHighlight() {
+            selectedHighlightId = null;
+            readingArticle?.querySelectorAll('.studymark-highlight-selected').forEach(mark =>
+                mark.classList.remove('studymark-highlight-selected'));
+            const deleteButton = root.querySelector('[data-action=delete-highlight]');
+            if (deleteButton) { deleteButton.hidden = true; deleteButton.disabled = true; }
+        }
 
         function renderOutline() {
             const headings = Array.from(readingArticle.querySelectorAll('h1,h2,h3,h4,h5,h6')).filter(heading => !/^\d+$/.test(heading.textContent.trim()));
@@ -192,19 +226,40 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
             const colorButton = event.target.closest('[data-highlight-color]');
             if (colorButton) {
                 highlightColor = colorButton.dataset.highlightColor;
-                root.querySelectorAll('[data-highlight-color]').forEach(button => {
-                    const selected = button === colorButton;
-                    button.classList.toggle('active', selected);
-                    button.setAttribute('aria-pressed', String(selected));
-                    button.title = selected ? `${s.selectedcolor}: ${button.getAttribute('aria-label')}` : button.getAttribute('aria-label');
-                });
+                syncPalette(highlightColor);
                 highlighter?.setColor(highlightColor);
+                if (selectedHighlightId) {
+                    const record = highlights.find(item => +item.id === selectedHighlightId);
+                    if (record?.canedit && record.color !== highlightColor) {
+                        const updated = await call('mod_studymark_update_highlight', {
+                            cmid: config.cmid, highlightid: selectedHighlightId, color: highlightColor,
+                            note: record.note || '', shared: Boolean(record.shared), groupid: record.groupid || 0
+                        });
+                        record.color = updated.color;
+                        readingArticle.querySelectorAll(`[data-highlight-id="${selectedHighlightId}"]`).forEach(mark =>
+                            mark.style.backgroundColor = updated.color);
+                        renderMode(); updateOutlineHighlights();
+                    }
+                }
                 return;
             }
             const action = event.target.closest('[data-action]')?.dataset.action;
             if (action === 'toggle-focus') { root.classList.toggle('studymark-focus'); return; }
             if (action === 'toggle-outline') { root.classList.toggle('studymark-outline-collapsed'); updateOutlineButton(); return; }
             if (action === 'summary') { summaryMode = !summaryMode; renderMode(); return; }
+            if (action === 'delete-highlight' && selectedHighlightId) {
+                const id = selectedHighlightId;
+                if (!window.confirm(s.deletehighlightconfirm)) return;
+                await call('mod_studymark_delete_highlight', {cmid: config.cmid, highlightid: id});
+                readingArticle.querySelectorAll(`[data-highlight-id="${id}"]`).forEach(savedMark => {
+                    const parent = savedMark.parentNode;
+                    while (savedMark.firstChild) parent.insertBefore(savedMark.firstChild, savedMark);
+                    savedMark.remove(); parent.normalize();
+                });
+                highlights = highlights.filter(item => +item.id !== id);
+                clearSelectedHighlight(); renderMode(); updateOutlineHighlights();
+                return;
+            }
             if (action === 'reference') {
                 referenceMode = !referenceMode;
                 const button = root.querySelector('[data-action=reference]');
@@ -230,14 +285,8 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
             if (selection && !selection.isCollapsed) return;
             const id = +mark.dataset.highlightId;
             const record = highlights.find(item => +item.id === id);
-            if (!record?.canedit || !window.confirm(s.deletehighlightconfirm)) return;
-            await call('mod_studymark_delete_highlight', {cmid: config.cmid, highlightid: id});
-            readingArticle.querySelectorAll(`[data-highlight-id="${id}"]`).forEach(savedMark => {
-                const parent = savedMark.parentNode;
-                while (savedMark.firstChild) parent.insertBefore(savedMark.firstChild, savedMark);
-                savedMark.remove(); parent.normalize();
-            });
-            highlights = highlights.filter(item => +item.id !== id); renderMode(); updateOutlineHighlights();
+            if (!record?.canedit) return;
+            selectHighlight(record);
         });
     }
     return {init};

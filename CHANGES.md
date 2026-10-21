@@ -1,5 +1,10 @@
 # Changes
 
+## 0.11.1
+
+- Existing editable highlights can now be selected and recoloured from the palette.
+- Replaced click-to-delete with an explicit delete button for the selected highlight.
+
 ## 0.11.0
 
 - Added an accessible five-colour highlight palette for new annotations.
