@@ -50,7 +50,7 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
             `<button type="button" class="btn btn-icon btn-outline-secondary" data-action="toggle-outline" aria-expanded="true" aria-label="${escape(s.hideoutline)}" title="${escape(s.hideoutline)}">${icons.outline}</button>` +
             `<button type="button" class="btn btn-icon btn-outline-secondary" data-action="summary" disabled aria-label="${escape(s.summaryreading)}" title="${escape(s.summaryreading)}">${icons.summary}</button>` +
             `<a class="btn btn-icon btn-outline-secondary" data-action="original" href="#" target="_blank" rel="noopener" aria-label="${escape(s.originaldocument)}" title="${escape(s.originaldocument)}">${icons.original}</a>` +
-            (config.canmanage ? `<button type="button" class="btn btn-icon btn-outline-secondary" data-action="reference" aria-pressed="false" aria-label="${escape(s.referencemode)}" title="${escape(s.referencemode)}">${icons.reference}</button><a class="btn btn-icon btn-outline-secondary" href="${config.reporturl}" aria-label="${escape(s.analytics)}" title="${escape(s.analytics)}">${icons.analytics}</a>` : '') +
+            (config.canmanage ? `<button type="button" class="btn btn-icon btn-outline-secondary active" data-action="reference" aria-pressed="true" aria-label="${escape(s.referencemodeactive)}" title="${escape(s.referencemodeactive)}">${icons.reference}</button><a class="btn btn-icon btn-outline-secondary" href="${config.reporturl}" aria-label="${escape(s.analytics)}" title="${escape(s.analytics)}">${icons.analytics}</a>` : '') +
             `<a class="btn btn-icon btn-outline-secondary" href="${config.courseurl}" aria-label="${escape(s.exittocourse)}" title="${escape(s.exittocourse)}">${icons.exit}</a>` +
             `<button type="button" class="btn btn-icon btn-outline-secondary" data-action="toggle-focus" aria-label="${escape(s.togglefullscreen)}" title="${escape(s.togglefullscreen)}">${icons.fullscreen}</button>` +
             `</div></nav><div class="studymark-layout"><nav class="studymark-outline" aria-label="${escape(s.documentoutline)}"><h2>${escape(s.outline)}</h2><div data-region="outline"></div></nav><main class="studymark-reader"><div data-region="viewer" class="studymark-empty">${escape(s.loadingdocument)}</div></main></div>`;
@@ -63,7 +63,7 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
         let highlights = [];
         let readingArticle = null;
         let summaryMode = false;
-        let referenceMode = false;
+        let referenceMode = Boolean(config.canmanage);
         let highlightColor = '#fff176';
         let selectedHighlightId = null;
 

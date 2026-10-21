@@ -1,5 +1,10 @@
 # Changes
 
+## 0.12.1
+
+- Enabled explicit reference highlighting mode by default for managers.
+- Clarified that the reference-mode control must be active when creating reference highlights.
+
 ## 0.12.0
 
 - Added Precision, Recall and F1-score to the tutor analytics report.
