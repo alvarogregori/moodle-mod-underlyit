@@ -1,5 +1,9 @@
 # Changes
 
+## 0.13.1
+
+- Shortened the course-average comparison label to keep report cells compact.
+
 ## 0.13.0
 
 - Added traffic-light status badges and position markers to tutor-report metrics.
