@@ -1,3 +1,10 @@
+/**
+ * StudyMark app module.
+ *
+ * @module     mod_studymark/app
+ * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter', 'mod_studymark/documentreader'], function(Ajax, Notification, Str, Highlighter, DocumentReader) {
     const call = (method, args) => Ajax.call([{methodname: method, args}])[0];
     const escape = value => { const node = document.createElement('div'); node.textContent = value || ''; return node.innerHTML; };

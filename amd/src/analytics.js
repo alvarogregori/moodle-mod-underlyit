@@ -1,3 +1,10 @@
+/**
+ * StudyMark analytics module.
+ *
+ * @module     mod_studymark/analytics
+ * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/documentreader'], function(Ajax, Notification, Str, DocumentReader) {
     let strings = {};
     const call = (method, args) => Ajax.call([{methodname: method, args}])[0];

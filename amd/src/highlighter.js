@@ -1,3 +1,10 @@
+/**
+ * StudyMark highlighter module.
+ *
+ * @module     mod_studymark/highlighter
+ * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 define([], function() {
     class Highlighter {
         constructor(container, onSave) {

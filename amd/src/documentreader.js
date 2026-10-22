@@ -1,3 +1,10 @@
+/**
+ * StudyMark documentreader module.
+ *
+ * @module     mod_studymark/documentreader
+ * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 define([], function() {
     const clean = text => (text || '').replace(/\s+/g, ' ').trim();
     const local = (node, name) => Array.from(node.getElementsByTagName('*')).filter(el => el.localName === name);

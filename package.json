@@ -1,0 +1,13 @@
+{
+  "name": "moodle-mod_studymark",
+  "private": true,
+  "version": "0.15.0",
+  "description": "Development tooling for the StudyMark Moodle activity plugin",
+  "scripts": {
+    "build": "grunt amd"
+  },
+  "devDependencies": {
+    "grunt": "1.6.1",
+    "grunt-contrib-uglify": "5.2.2"
+  }
+}

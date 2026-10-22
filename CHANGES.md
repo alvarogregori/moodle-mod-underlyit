@@ -1,3 +1,10 @@
+## 0.15.0
+
+- Changed the declared maturity from alpha to beta.
+- Added Moodle GPL, package, copyright and license headers to PHP and AMD source files.
+- Added reproducible provenance documentation and checksums for PDF.js and JSZip.
+- Added a Grunt build workflow and regenerated genuinely minified AMD distribution files.
+- Adopted the conventional `moodle-mod_studymark` repository name.
 ## 0.14.2
 
 - Added a learner control to show or hide the tutor reference when the tutor makes it available.

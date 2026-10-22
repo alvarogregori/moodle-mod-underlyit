@@ -2,3 +2,5 @@
 /tools/
 /*.zip
 /dist/
+
+/node_modules/
