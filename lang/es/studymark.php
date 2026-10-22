@@ -152,3 +152,6 @@ $string['green'] = 'Verde';
 $string['pink'] = 'Rosa';
 $string['orange'] = 'Naranja';
 $string['deletehighlight'] = 'Eliminar el subrayado seleccionado';
+
+$string['illustration'] = 'Ilustración del documento';
+$string['illustrationpage'] = 'Ilustración de la página';

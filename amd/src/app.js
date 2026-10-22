@@ -37,7 +37,7 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/highlighter
             'hideoutline', 'showoutline', 'containshighlights', 'referencemode', 'referencemodeactive',
             'showreference', 'hidereference', 'viewreference', 'hidereferenceview',
             'highlightcolor', 'yellow', 'blue', 'green', 'pink', 'orange', 'selectedcolor',
-            'deletehighlight', 'selectedhighlight'];
+            'deletehighlight', 'selectedhighlight', 'illustration', 'illustrationpage'];
         const values = await Str.get_strings(keys.map(key => ({key, component: 'mod_studymark'})));
         return Object.fromEntries(keys.map((key, index) => [key, values[index]]));
     };

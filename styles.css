@@ -228,3 +228,27 @@
     color: inherit;
 }
 .mod-studymark-app.studymark-reference-hidden mark[data-reference="1"] { background-image: none; }
+.studymark-reading-document .studymark-illustration {
+    margin: 2rem auto;
+    text-align: center;
+    break-inside: avoid;
+}
+.studymark-reading-document .studymark-illustration img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    max-height: min(70vh, 48rem);
+    margin: 0 auto;
+    border-radius: .35rem;
+    object-fit: contain;
+    box-shadow: 0 .2rem 1rem rgba(0, 0, 0, .12);
+}
+.studymark-reading-document .studymark-illustration[data-caption]:not([data-caption=""])::after {
+    display: block;
+    margin-top: .55rem;
+    color: var(--bs-secondary-color, #6c757d);
+    content: attr(data-caption);
+    font-family: system-ui, sans-serif;
+    font-size: .85rem;
+    line-height: 1.4;
+}

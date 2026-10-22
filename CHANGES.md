@@ -1,3 +1,9 @@
+## 0.15.1
+
+- Added illustrations as non-text blocks in the reading flow.
+- Preserved embedded images from DOCX and EPUB documents and safe images from HTML.
+- Added approximate per-page raster image extraction for PDF documents.
+- Kept illustration captions and alternative text outside highlighting offsets and reading metrics.
 ## 0.15.0
 
 - Changed the declared maturity from alpha to beta.

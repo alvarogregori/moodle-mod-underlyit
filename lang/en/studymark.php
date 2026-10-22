@@ -152,3 +152,6 @@ $string['green'] = 'Green';
 $string['pink'] = 'Pink';
 $string['orange'] = 'Orange';
 $string['deletehighlight'] = 'Delete selected highlight';
+
+$string['illustration'] = 'Document illustration';
+$string['illustrationpage'] = 'Illustration on page';

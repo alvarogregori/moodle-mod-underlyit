@@ -44,7 +44,8 @@ define(['core/ajax', 'core/notification', 'core/str', 'mod_studymark/documentrea
             'jszipunavailable', 'invalidepub', 'invaliddocx', 'statuslegend', 'matched', 'extra', 'missing', 'matchbreakdown',
             'reportguideheading', 'reportguiderelevance', 'reportguidecoverage', 'reportguidebalance', 'reportguideaverage',
             'simpleview', 'showtechnical', 'hidetechnical', 'generalstatus', 'interpretationhigh', 'interpretationmedium',
-            'interpretationlow', 'interpretationnone', 'statusgood', 'statusdeveloping', 'statusreview', 'statusnodata'];
+            'interpretationlow', 'interpretationnone', 'statusgood', 'statusdeveloping', 'statusreview', 'statusnodata',
+            'illustration', 'illustrationpage'];
         const values = await Str.get_strings(keys.map(key => ({key, component: 'mod_studymark'})));
         return Object.fromEntries(keys.map((key, index) => [key, values[index]]));
     };
