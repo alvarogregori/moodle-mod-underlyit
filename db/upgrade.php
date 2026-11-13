@@ -15,7 +15,7 @@
 // along with Moodle. If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * StudyMark activity plugin.
+ * Underly.it activity plugin.
  *
  * @package    mod_studymark
  * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>
@@ -91,6 +91,9 @@ function xmldb_studymark_upgrade($oldversion) {
     }
     if ($oldversion < 2026102201) {
         upgrade_mod_savepoint(true, 2026102201, 'studymark');
+    }
+    if ($oldversion < 2026111300) {
+        upgrade_mod_savepoint(true, 2026111300, 'studymark');
     }
     return true;
 }

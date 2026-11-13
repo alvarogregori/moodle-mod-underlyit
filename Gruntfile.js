@@ -2,7 +2,7 @@
 
 module.exports = function(grunt) {
     const banner = `/*!\n` +
-        ` * StudyMark activity plugin.\n` +
+        ` * Underly.it activity plugin.\n` +
         ` *\n` +
         ` * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>\n` +
         ` * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later\n` +

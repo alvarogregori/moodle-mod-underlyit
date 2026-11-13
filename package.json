@@ -1,8 +1,8 @@
 {
   "name": "moodle-mod_studymark",
   "private": true,
-  "version": "0.15.1",
-  "description": "Development tooling for the StudyMark Moodle activity plugin",
+  "version": "0.16.0",
+  "description": "Development tooling for the Underly.it Moodle activity plugin",
   "scripts": {
     "build": "grunt amd"
   },

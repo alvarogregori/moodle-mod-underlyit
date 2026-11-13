@@ -15,7 +15,7 @@
 // along with Moodle. If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * StudyMark activity plugin.
+ * Underly.it activity plugin.
  *
  * @package    mod_studymark
  * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>

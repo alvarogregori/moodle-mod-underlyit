@@ -1,4 +1,4 @@
-# StudyMark Moodle activity architecture
+# Underly.it Moodle activity architecture
 
 ## Migration boundary
 

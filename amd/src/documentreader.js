@@ -1,5 +1,5 @@
 /**
- * StudyMark documentreader module.
+ * Underly.it documentreader module.
  *
  * @module     mod_studymark/documentreader
  * @copyright  2026 Alvaro Gregori <50322409+alvarogregori@users.noreply.github.com>

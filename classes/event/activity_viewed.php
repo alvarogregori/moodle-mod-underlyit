@@ -15,7 +15,7 @@
 // along with Moodle. If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * StudyMark activity plugin.
+ * Underly.it activity plugin.
  *
  * @package    mod_studymark
  * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>
@@ -26,5 +26,5 @@ defined('MOODLE_INTERNAL') || die();
 class activity_viewed extends \core\event\course_module_viewed {
     protected function init() { parent::init(); $this->data['objecttable'] = 'studymark'; }
     public static function get_name() { return get_string('eventactivityviewed', 'studymark'); }
-    public function get_description() { return "The user with id '{$this->userid}' viewed StudyMark activity '{$this->objectid}'."; }
+    public function get_description() { return "The user with id '{$this->userid}' viewed Underly.it activity '{$this->objectid}'."; }
 }

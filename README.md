@@ -1,10 +1,10 @@
-# mod_studymark
+# Underly.it (`mod_studymark`)
 
-StudyMark is a Moodle activity plugin for active and collaborative document reading.
+Underly.it is a Moodle activity plugin for active and collaborative document reading.
 
 ## Install
 
-Copy this directory to `mod/studymark`, visit **Site administration > Notifications**, then add a StudyMark activity to a course. Each activity accepts one PDF, EPUB, DOCX, HTML or TXT document.
+Copy this directory to `mod/studymark`, visit **Site administration > Notifications**, then add an Underly.it activity to a course. Each activity accepts one PDF, EPUB, DOCX, HTML or TXT document.
 
 This release is a public beta. See `docs/ARCHITECTURE.md` for implemented behaviour, limitations and the Marketplace roadmap.
 
@@ -30,10 +30,10 @@ npm run build
 
 ## Third-party libraries
 
-StudyMark bundles PDF.js 3.11.174 and JSZip 3.10.1. Their licenses, exact upstream sources, reproduction steps and SHA-256 checksums are documented in each library's `readme_moodle.txt` and in `thirdpartylibs.xml`.
+Underly.it bundles PDF.js 3.11.174 and JSZip 3.10.1. Their licenses, exact upstream sources, reproduction steps and SHA-256 checksums are documented in each library's `readme_moodle.txt` and in `thirdpartylibs.xml`.
 
 ## Source, issues and documentation
 
-- Source: https://github.com/alvarogregori/moodle-mod_studymark
-- Issues: https://github.com/alvarogregori/moodle-mod_studymark/issues
+- Source: https://github.com/alvarogregori/moodle-mod-underlyit
+- Issues: https://github.com/alvarogregori/moodle-mod-underlyit/issues
 - Architecture: `docs/ARCHITECTURE.md`

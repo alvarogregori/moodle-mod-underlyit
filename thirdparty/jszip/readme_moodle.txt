@@ -25,4 +25,4 @@
 ACC7E41455A80765B5FD9C7EE1B8078A6D160BBBCA455AEAE854DE65C947D59E  jszip.min.js
 ```
 
-No source modifications are applied by StudyMark.
+No source modifications are applied by Underly.it.

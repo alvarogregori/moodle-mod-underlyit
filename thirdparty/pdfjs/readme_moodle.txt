@@ -28,4 +28,4 @@
 FEABDF309770ED24BBA31A5467836CDC8CF639C705AF27D52B585B041BB8527B  pdf.worker.min.js
 ```
 
-No source modifications are applied by StudyMark.
+No source modifications are applied by Underly.it.

@@ -15,7 +15,7 @@
 // along with Moodle. If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * StudyMark activity plugin.
+ * Underly.it activity plugin.
  *
  * @package    mod_studymark
  * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>
@@ -24,7 +24,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_studymark';
-$plugin->version = 2026102201;
+$plugin->version = 2026111300;
 $plugin->requires = 2023042400;
 $plugin->maturity = MATURITY_BETA;
-$plugin->release = '0.15.1 (Beta)';
+$plugin->release = '0.16.0 (Beta)';

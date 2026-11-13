@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <XMLDB PATH="mod/studymark/db" VERSION="2026102106" COMMENT="XMLDB file for mod_studymark">
   <TABLES>
-    <TABLE NAME="studymark" COMMENT="StudyMark activity instances">
+    <TABLE NAME="studymark" COMMENT="Underly.it activity instances">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>

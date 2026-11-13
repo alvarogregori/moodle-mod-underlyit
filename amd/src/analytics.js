@@ -1,5 +1,5 @@
 /**
- * StudyMark analytics module.
+ * Underly.it analytics module.
  *
  * @module     mod_studymark/analytics
  * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>

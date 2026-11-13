@@ -1,5 +1,5 @@
 /**
- * StudyMark highlighter module.
+ * Underly.it highlighter module.
  *
  * @module     mod_studymark/highlighter
  * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>

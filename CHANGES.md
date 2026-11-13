@@ -1,3 +1,8 @@
+## 0.16.0
+
+- Renamed the visible plugin brand to Underly.it while retaining the mod_studymark component for upgrade compatibility.
+- Updated user-facing language strings, documentation, event descriptions and development metadata.
+
 ## 0.15.1
 
 - Added illustrations as non-text blocks in the reading flow.
@@ -93,4 +98,4 @@
 - File API documents and XMLDB annotation tables.
 - AJAX document, highlight and comment services.
 - Events, privacy provider, backup and restore.
-- Reused text-offset highlighting approach from the standalone StudyMark frontend.
+- Reused text-offset highlighting approach from the standalone Underly.it frontend.

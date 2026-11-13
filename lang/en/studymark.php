@@ -15,16 +15,16 @@
 // along with Moodle. If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * StudyMark activity plugin.
+ * Underly.it activity plugin.
  *
  * @package    mod_studymark
  * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-$string['pluginname'] = 'StudyMark';
-$string['modulename'] = 'StudyMark';
-$string['modulenameplural'] = 'StudyMark activities';
-$string['pluginadministration'] = 'StudyMark administration';
+$string['pluginname'] = 'Underly.it';
+$string['modulename'] = 'Underly.it';
+$string['modulenameplural'] = 'Underly.it activities';
+$string['pluginadministration'] = 'Underly.it administration';
 $string['studymarkname'] = 'Activity name';
 $string['studymarkname_help'] = 'Name of the collaborative reading activity.';
 $string['documents'] = 'Documents';
@@ -35,7 +35,7 @@ $string['privacy:metadata:studymark_highlight'] = 'Stores highlights made by lea
 $string['privacy:metadata:studymark_comment'] = 'Stores comments made by learners.';
 $string['privacy:metadata:userid'] = 'The Moodle user ID.';
 $string['privacy:metadata:content'] = 'User-authored annotation content.';
-$string['eventactivityviewed'] = 'StudyMark activity viewed';
+$string['eventactivityviewed'] = 'Underly.it activity viewed';
 $string['eventhighlightcreated'] = 'Highlight created';
 $string['eventcommentcreated'] = 'Comment created';
 $string['errorinvaliddocument'] = 'The requested document is not available in this activity.';

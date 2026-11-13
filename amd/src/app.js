@@ -1,5 +1,5 @@
 /**
- * StudyMark app module.
+ * Underly.it app module.
  *
  * @module     mod_studymark/app
  * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>
