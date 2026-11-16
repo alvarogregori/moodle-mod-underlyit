@@ -28,6 +28,8 @@ use core_external\external_api;
  * @covers     \mod_underlyit\external\api
  * @covers     \mod_underlyit\external\update_highlight
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_underlyit\external\api::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_underlyit\external\update_highlight::class)]
 final class api_test extends \advanced_testcase {
     /** @var \stdClass Course module. */
     private \stdClass $cm;

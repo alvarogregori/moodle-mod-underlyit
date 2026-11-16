@@ -28,6 +28,8 @@ use mod_underlyit\local\completion;
  * @covers     \mod_underlyit\task\refresh_completion
  * @covers     \mod_underlyit\local\completion
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_underlyit\task\refresh_completion::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_underlyit\local\completion::class)]
 final class refresh_completion_test extends \advanced_testcase {
     /**
      * Creates a course with completion, a tutor, a learner and an activity that requires a 50% match.

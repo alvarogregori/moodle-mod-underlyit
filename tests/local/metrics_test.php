@@ -25,6 +25,7 @@ namespace mod_underlyit\local;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \mod_underlyit\local\metrics
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_underlyit\local\metrics::class)]
 final class metrics_test extends \basic_testcase {
     /**
      * Merging, length and intersection of intervals.

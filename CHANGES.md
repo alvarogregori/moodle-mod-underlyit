@@ -16,7 +16,7 @@
 - The activity description is shown once, in the standard activity header.
 - In reference mode the colour palette is disabled and explains that the reference is always a blue underline; it is enabled again in personal mode.
 - Changes to the tutor reference or to the document length no longer recalculate every learner's completion inside the request: they queue a `refresh_completion` ad hoc task (identical pending tasks are merged) that runs with cron. A learner's own highlighting is still recalculated at once.
-- Added a data generator and PHPUnit tests for the completion task, the highlight external functions and backup/restore (with and without user data: description files, document file, highlights and links to the activity).
+- Added a data generator and PHPUnit tests for the completion task, the highlight external functions and backup/restore (with and without user data: description files, document file, highlights and links to the activity). The test classes declare their coverage with PHPUnit attributes as well as `@covers` tags, so they run without deprecation notices on Moodle 5.0 and 5.1 (PHPUnit 11) and still on Moodle 4.5 (PHPUnit 9).
 - Removed empty-string defaults from required text columns in `install.xml`, which XMLDB reported during installation.
 - New highlights are validated on the server: non-empty text of at most 20,000 characters, bounded heading and selector lengths, and non-negative positions.
 - The AMD modules are built with Moodle's Grunt (Babel, source maps) and pass Moodle's ESLint and stylelint rules; the plugin's own Gruntfile and npm files were removed. The JavaScript was restructured into documented functions without changing the extracted text, so existing highlight offsets still apply.

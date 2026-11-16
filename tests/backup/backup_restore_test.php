@@ -28,6 +28,10 @@ namespace mod_underlyit\backup;
  * @covers     \restore_underlyit_activity_task
  * @covers     \restore_underlyit_activity_structure_step
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\backup_underlyit_activity_task::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\backup_underlyit_activity_structure_step::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\restore_underlyit_activity_task::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\restore_underlyit_activity_structure_step::class)]
 final class backup_restore_test extends \advanced_testcase {
     /**
      * Creates a course with an activity that has a description image, a document and highlights.
