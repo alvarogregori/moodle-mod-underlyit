@@ -8,23 +8,24 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Underly.it activity plugin.
+ * Version information for the Underly.it activity.
  *
- * @package    mod_studymark
+ * @package    mod_underlyit
  * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'mod_studymark';
-$plugin->version = 2026111300;
-$plugin->requires = 2023042400;
+$plugin->component = 'mod_underlyit';
+$plugin->version = 2026111600;
+$plugin->requires = 2024100700;
 $plugin->maturity = MATURITY_BETA;
-$plugin->release = '0.16.0 (Beta)';
+$plugin->release = '0.17.0 (Beta)';

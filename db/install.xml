@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/studymark/db" VERSION="2026102106" COMMENT="XMLDB file for mod_studymark">
+<XMLDB PATH="mod/underlyit/db" VERSION="2026111600" COMMENT="XMLDB file for mod_underlyit">
   <TABLES>
-    <TABLE NAME="studymark" COMMENT="Underly.it activity instances">
+    <TABLE NAME="underlyit" COMMENT="Underly.it activity instances">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT=""/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true"/>
         <FIELD NAME="intro" TYPE="text" NOTNULL="false"/>
         <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0"/>
         <FIELD NAME="completionprogress" TYPE="int" LENGTH="3" NOTNULL="true" DEFAULT="0"/>
@@ -16,57 +16,40 @@
       </FIELDS>
       <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="course" TYPE="foreign" FIELDS="course" REFTABLE="course" REFFIELDS="id"/></KEYS>
     </TABLE>
-    <TABLE NAME="studymark_document" COMMENT="Documents backed by Moodle File API">
+    <TABLE NAME="underlyit_document" COMMENT="Documents backed by Moodle File API">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="studymarkid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="underlyitid" TYPE="int" LENGTH="10" NOTNULL="true"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true"/>
-        <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT=""/>
-        <FIELD NAME="filename" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT=""/>
-        <FIELD NAME="mimetype" TYPE="char" LENGTH="100" NOTNULL="true" DEFAULT=""/>
+        <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="true"/>
+        <FIELD NAME="filename" TYPE="char" LENGTH="255" NOTNULL="true"/>
+        <FIELD NAME="mimetype" TYPE="char" LENGTH="100" NOTNULL="true"/>
         <FIELD NAME="filesize" TYPE="int" LENGTH="20" NOTNULL="true" DEFAULT="0"/>
-        <FIELD NAME="contenthash" TYPE="char" LENGTH="40" NOTNULL="true" DEFAULT=""/>
+        <FIELD NAME="contenthash" TYPE="char" LENGTH="40" NOTNULL="true"/>
         <FIELD NAME="textlength" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
       </FIELDS>
-      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="activity" TYPE="foreign" FIELDS="studymarkid" REFTABLE="studymark" REFFIELDS="id"/><KEY NAME="user" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/></KEYS>
-      <INDEXES><INDEX NAME="activity_unique" UNIQUE="true" FIELDS="studymarkid"/></INDEXES>
+      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="activity" TYPE="foreign" FIELDS="underlyitid" REFTABLE="underlyit" REFFIELDS="id"/><KEY NAME="user" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/></KEYS>
+      <INDEXES><INDEX NAME="activity_unique" UNIQUE="true" FIELDS="underlyitid"/></INDEXES>
     </TABLE>
-    <TABLE NAME="studymark_highlight" COMMENT="User highlights anchored to documents">
+    <TABLE NAME="underlyit_highlight" COMMENT="User highlights anchored to documents">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="documentid" TYPE="int" LENGTH="10" NOTNULL="true"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true"/>
-        <FIELD NAME="groupid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
         <FIELD NAME="selectedtext" TYPE="text" NOTNULL="true"/>
         <FIELD NAME="selectorjson" TYPE="text" NOTNULL="false"/>
         <FIELD NAME="pagenumber" TYPE="int" LENGTH="10" NOTNULL="false"/>
         <FIELD NAME="color" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="#ffff00"/>
-        <FIELD NAME="note" TYPE="text" NOTNULL="false"/>
         <FIELD NAME="headingcontext" TYPE="text" NOTNULL="false"/>
         <FIELD NAME="positionorder" TYPE="number" LENGTH="12" DECIMALS="4" NOTNULL="true" DEFAULT="0"/>
-        <FIELD NAME="shared" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0"/>
         <FIELD NAME="reference" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
       </FIELDS>
-      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="document" TYPE="foreign" FIELDS="documentid" REFTABLE="studymark_document" REFFIELDS="id"/><KEY NAME="user" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/></KEYS>
-      <INDEXES><INDEX NAME="document_user" UNIQUE="false" FIELDS="documentid,userid"/><INDEX NAME="shared_group" UNIQUE="false" FIELDS="documentid,shared,groupid"/></INDEXES>
-    </TABLE>
-    <TABLE NAME="studymark_comment" COMMENT="Comments on documents or highlights">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="documentid" TYPE="int" LENGTH="10" NOTNULL="true"/>
-        <FIELD NAME="highlightid" TYPE="int" LENGTH="10" NOTNULL="false"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true"/>
-        <FIELD NAME="groupid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
-        <FIELD NAME="content" TYPE="text" NOTNULL="true"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
-      </FIELDS>
-      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="document" TYPE="foreign" FIELDS="documentid" REFTABLE="studymark_document" REFFIELDS="id"/><KEY NAME="highlight" TYPE="foreign" FIELDS="highlightid" REFTABLE="studymark_highlight" REFFIELDS="id"/><KEY NAME="user" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/></KEYS>
-      <INDEXES><INDEX NAME="document_group" UNIQUE="false" FIELDS="documentid,groupid"/></INDEXES>
+      <KEYS><KEY NAME="primary" TYPE="primary" FIELDS="id"/><KEY NAME="document" TYPE="foreign" FIELDS="documentid" REFTABLE="underlyit_document" REFFIELDS="id"/><KEY NAME="user" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/></KEYS>
+      <INDEXES><INDEX NAME="document_user" UNIQUE="false" FIELDS="documentid,userid"/></INDEXES>
     </TABLE>
   </TABLES>
 </XMLDB>

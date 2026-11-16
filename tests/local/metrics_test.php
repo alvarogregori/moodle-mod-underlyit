@@ -8,33 +8,43 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+namespace mod_underlyit\local;
 
 /**
- * Underly.it activity plugin.
+ * Unit tests for the highlighting metrics.
  *
- * @package    mod_studymark
+ * @package    mod_underlyit
+ * @category   test
  * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \mod_underlyit\local\metrics
  */
-namespace mod_studymark;
-
-defined('MOODLE_INTERNAL') || die();
-
-final class metrics_test extends \advanced_testcase {
+final class metrics_test extends \basic_testcase {
+    /**
+     * Merging, length and intersection of intervals.
+     *
+     * @return void
+     */
     public function test_interval_operations_are_deterministic(): void {
-        $merged = \mod_studymark\local\metrics::merge_intervals([[5, 9], [1, 4], [3, 7], [12, 13]]);
+        $merged = metrics::merge_intervals([[5, 9], [1, 4], [3, 7], [12, 13]]);
         $this->assertSame([[1, 9], [12, 13]], $merged);
-        $this->assertSame(9, \mod_studymark\local\metrics::length($merged));
-        $this->assertSame(4, \mod_studymark\local\metrics::intersection_length($merged, [[0, 3], [7, 10]]));
+        $this->assertSame(9, metrics::length($merged));
+        $this->assertSame(4, metrics::intersection_length($merged, [[0, 3], [7, 10]]));
     }
 
+    /**
+     * Precision, recall, F1 and Jaccard of a partial overlap.
+     *
+     * @return void
+     */
     public function test_comparison_scores(): void {
-        $scores = \mod_studymark\local\metrics::comparison_scores([[0, 10]], [[5, 15]]);
+        $scores = metrics::comparison_scores([[0, 10]], [[5, 15]]);
         $this->assertSame(10, $scores['studentchars']);
         $this->assertSame(10, $scores['referencechars']);
         $this->assertSame(5, $scores['intersection']);
@@ -44,13 +54,18 @@ final class metrics_test extends \advanced_testcase {
         $this->assertEqualsWithDelta(33.333, $scores['jaccard'], 0.001);
     }
 
+    /**
+     * Empty input and overlapping learner intervals.
+     *
+     * @return void
+     */
     public function test_comparison_scores_handle_empty_and_overlapping_intervals(): void {
-        $empty = \mod_studymark\local\metrics::comparison_scores([], []);
+        $empty = metrics::comparison_scores([], []);
         $this->assertSame(0.0, $empty['precision']);
         $this->assertSame(0.0, $empty['recall']);
         $this->assertSame(0.0, $empty['f1score']);
 
-        $exact = \mod_studymark\local\metrics::comparison_scores([[0, 5], [3, 10]], [[0, 10]]);
+        $exact = metrics::comparison_scores([[0, 5], [3, 10]], [[0, 10]]);
         $this->assertEqualsWithDelta(100.0, $exact['precision'], 0.001);
         $this->assertEqualsWithDelta(100.0, $exact['recall'], 0.001);
         $this->assertEqualsWithDelta(100.0, $exact['f1score'], 0.001);

@@ -1,0 +1,192 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_underlyit/report
+
+    Highlighting report: each learner's progress and match with the tutor reference.
+
+    Context variables required for this template:
+    * hasreference - Whether the tutor has highlighted a reference
+    * referencenote - Summary of the reference, or how to create one
+    * courseaverage - Formatted course average of the amount highlighted
+    * documentlength - Formatted document length
+    * hasstudents - Whether there are learners to list
+    * students - Learner rows; precision, recall, f1score and match are present only with a reference
+
+    Example context (json):
+    {
+        "hasreference": true,
+        "referencenote": "The reference contains 1,200 highlighted characters.",
+        "courseaverage": "18.4%",
+        "documentlength": "24,000 characters",
+        "hasstudents": true,
+        "students": [{
+            "fullname": "Ana García",
+            "highlightcount": 12,
+            "statusstate": "success",
+            "statuslabel": "Good balance",
+            "statustext": "Good balance: identifies much of the key content without over-highlighting.",
+            "progress": {"label": "Document progress", "value": "80.0%", "width": 80, "state": "success",
+                "difference": {"arrow": "↑", "value": "+5.0%", "class": "text-success"}},
+            "detail": {"label": "Amount highlighted", "value": "15.0%", "width": 15, "state": "danger",
+                "difference": {"arrow": "↓", "value": "-3.4%", "class": "text-danger"}},
+            "precision": {"label": "Relevance", "value": "60.0%", "width": 60, "state": "success",
+                "difference": {"arrow": "=", "value": "0.0%", "class": "text-muted"}},
+            "recall": {"label": "Coverage of key content", "value": "55.0%", "width": 55, "state": "success",
+                "difference": {"arrow": "=", "value": "0.0%", "class": "text-muted"}},
+            "f1score": {"label": "Balance", "value": "57.4%", "width": 57.4, "state": "success",
+                "difference": {"arrow": "=", "value": "0.0%", "class": "text-muted"}},
+            "match": {"value": "40.2%", "state": "warning", "matched": 660, "extra": 440, "missing": 540,
+                "matchedwidth": 40.2, "extrawidth": 26.8, "missingwidth": 32.9,
+                "difference": {"arrow": "=", "value": "0.0%", "class": "text-muted"}}
+        }]
+    }
+}}
+<div class="mod-underlyit-analytics" id="underlyit-analytics">
+    <aside class="alert alert-info underlyit-report-guide">
+        <strong>{{#str}}reportguideheading, mod_underlyit{{/str}}</strong>
+        <ul>
+            <li>{{#str}}reportguiderelevance, mod_underlyit{{/str}}</li>
+            <li>{{#str}}reportguidecoverage, mod_underlyit{{/str}}</li>
+            <li>{{#str}}reportguidebalance, mod_underlyit{{/str}}</li>
+        </ul>
+        <small>{{#str}}reportguideaverage, mod_underlyit{{/str}}</small>
+    </aside>
+    <div class="underlyit-report-controls">
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-action="toggle-technical" aria-pressed="false"
+                data-show-label="{{#str}}showtechnical, mod_underlyit{{/str}}"
+                data-hide-label="{{#str}}hidetechnical, mod_underlyit{{/str}}">{{#str}}showtechnical, mod_underlyit{{/str}}</button>
+        <span>{{#str}}simpleview, mod_underlyit{{/str}}</span>
+    </div>
+    <section class="underlyit-analytics-summary">
+        <div><span>{{#str}}courseaveragedetail, mod_underlyit{{/str}}</span><strong>{{courseaverage}}</strong></div>
+        <div><span>{{#str}}documentlength, mod_underlyit{{/str}}</span><strong>{{documentlength}}</strong></div>
+    </section>
+    <div class="alert {{#hasreference}}alert-light{{/hasreference}}{{^hasreference}}alert-warning{{/hasreference}}">{{referencenote}}</div>
+    <div class="table-responsive">
+        <table class="table table-striped underlyit-analytics-table">
+            <thead>
+                <tr>
+                    <th scope="col">{{#str}}student, mod_underlyit{{/str}}</th>
+                    <th scope="col">{{#str}}highlights, mod_underlyit{{/str}}</th>
+                    <th scope="col">
+                        {{#str}}readingreached, mod_underlyit{{/str}}
+                        <span class="underlyit-info" tabindex="0" title="{{#str}}progresscalculation, mod_underlyit{{/str}}"
+                                aria-label="{{#str}}progresscalculation, mod_underlyit{{/str}}">&#9432;</span>
+                    </th>
+                    <th scope="col" class="underlyit-technical-column">
+                        {{#str}}detail, mod_underlyit{{/str}}
+                        <span class="underlyit-info" tabindex="0" title="{{#str}}detailcalculation, mod_underlyit{{/str}}"
+                                aria-label="{{#str}}detailcalculation, mod_underlyit{{/str}}">&#9432;</span>
+                    </th>
+                    <th scope="col">
+                        {{#str}}precision, mod_underlyit{{/str}}
+                        <span class="underlyit-info" tabindex="0" title="{{#str}}precisioncalculation, mod_underlyit{{/str}}"
+                                aria-label="{{#str}}precisioncalculation, mod_underlyit{{/str}}">&#9432;</span>
+                    </th>
+                    <th scope="col">
+                        {{#str}}recall, mod_underlyit{{/str}}
+                        <span class="underlyit-info" tabindex="0" title="{{#str}}recallcalculation, mod_underlyit{{/str}}"
+                                aria-label="{{#str}}recallcalculation, mod_underlyit{{/str}}">&#9432;</span>
+                    </th>
+                    <th scope="col">
+                        {{#str}}f1score, mod_underlyit{{/str}}
+                        <span class="underlyit-info" tabindex="0" title="{{#str}}f1calculation, mod_underlyit{{/str}}"
+                                aria-label="{{#str}}f1calculation, mod_underlyit{{/str}}">&#9432;</span>
+                    </th>
+                    <th scope="col" class="underlyit-technical-column">
+                        {{#str}}jaccard, mod_underlyit{{/str}}
+                        <span class="underlyit-info" tabindex="0" title="{{#str}}matchcalculation, mod_underlyit{{/str}}"
+                                aria-label="{{#str}}matchcalculation, mod_underlyit{{/str}}">&#9432;</span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#students}}
+                <tr>
+                    <th scope="row">
+                        <span class="underlyit-student-name">{{fullname}}</span>
+                        <span class="badge badge-{{statusstate}} text-bg-{{statusstate}}">{{statuslabel}}</span>
+                        <small class="underlyit-student-interpretation">{{statustext}}</small>
+                    </th>
+                    <td>{{highlightcount}}</td>
+                    <td>{{#progress}}{{> mod_underlyit/metric}}{{/progress}}</td>
+                    <td class="underlyit-technical-column">{{#detail}}{{> mod_underlyit/metric}}{{/detail}}</td>
+                    {{#hasreference}}
+                    <td>{{#precision}}{{> mod_underlyit/metric}}{{/precision}}</td>
+                    <td>{{#recall}}{{> mod_underlyit/metric}}{{/recall}}</td>
+                    <td>{{#f1score}}{{> mod_underlyit/metric}}{{/f1score}}</td>
+                    <td class="underlyit-technical-column">
+                        {{#match}}
+                        <div class="underlyit-metric underlyit-match-metric">
+                            <div class="underlyit-metric-heading">
+                                <span>{{#str}}jaccard, mod_underlyit{{/str}}</span>
+                                <span class="badge badge-{{state}} text-bg-{{state}}">{{value}}</span>
+                            </div>
+                            <div class="progress underlyit-match-bar" aria-label="{{#str}}matchbreakdown, mod_underlyit{{/str}}">
+                                <div class="progress-bar bg-success" style="width: {{matchedwidth}}%"
+                                        title="{{#str}}matched, mod_underlyit{{/str}}: {{matched}}"></div>
+                                <div class="progress-bar bg-warning" style="width: {{extrawidth}}%"
+                                        title="{{#str}}extra, mod_underlyit{{/str}}: {{extra}}"></div>
+                                <div class="progress-bar bg-danger" style="width: {{missingwidth}}%"
+                                        title="{{#str}}missing, mod_underlyit{{/str}}: {{missing}}"></div>
+                            </div>
+                            <div class="underlyit-match-legend">
+                                <span class="matched">{{#str}}matched, mod_underlyit{{/str}}</span>
+                                <span class="extra">{{#str}}extra, mod_underlyit{{/str}}</span>
+                                <span class="missing">{{#str}}missing, mod_underlyit{{/str}}</span>
+                            </div>
+                            {{#difference}}
+                            <small class="underlyit-metric-difference {{class}}">{{arrow}} {{value}} {{#str}}comparedaverage, mod_underlyit{{/str}}</small>
+                            {{/difference}}
+                        </div>
+                        {{/match}}
+                    </td>
+                    {{/hasreference}}
+                    {{^hasreference}}
+                    <td><span class="text-muted">{{#str}}noreference, mod_underlyit{{/str}}</span></td>
+                    <td><span class="text-muted">{{#str}}noreference, mod_underlyit{{/str}}</span></td>
+                    <td><span class="text-muted">{{#str}}noreference, mod_underlyit{{/str}}</span></td>
+                    <td class="underlyit-technical-column"><span class="text-muted">{{#str}}noreference, mod_underlyit{{/str}}</span></td>
+                    {{/hasreference}}
+                </tr>
+                {{/students}}
+                {{^hasstudents}}
+                <tr><td colspan="8" class="text-muted text-center">{{#str}}nostudents, mod_underlyit{{/str}}</td></tr>
+                {{/hasstudents}}
+            </tbody>
+        </table>
+    </div>
+    <details class="underlyit-analytics-help">
+        <summary>{{#str}}calculationheading, mod_underlyit{{/str}}</summary>
+        <ul>
+            <li><strong>{{#str}}readingreached, mod_underlyit{{/str}}:</strong> {{#str}}progresscalculation, mod_underlyit{{/str}}</li>
+            <li><strong>{{#str}}detail, mod_underlyit{{/str}}:</strong> {{#str}}detailcalculation, mod_underlyit{{/str}}</li>
+            <li><strong>{{#str}}precision, mod_underlyit{{/str}}:</strong> {{#str}}precisioncalculation, mod_underlyit{{/str}}</li>
+            <li><strong>{{#str}}recall, mod_underlyit{{/str}}:</strong> {{#str}}recallcalculation, mod_underlyit{{/str}}</li>
+            <li><strong>{{#str}}f1score, mod_underlyit{{/str}}:</strong> {{#str}}f1calculation, mod_underlyit{{/str}}</li>
+            <li><strong>{{#str}}jaccard, mod_underlyit{{/str}}:</strong> {{#str}}matchcalculation, mod_underlyit{{/str}}</li>
+        </ul>
+        <p>{{#str}}statuslegend, mod_underlyit{{/str}}</p>
+        <p>{{#str}}progressestimate, mod_underlyit{{/str}}</p>
+    </details>
+</div>
+{{#js}}
+require(['mod_underlyit/analytics'], function(analytics) {
+    analytics.init();
+});
+{{/js}}

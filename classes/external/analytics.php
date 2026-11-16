@@ -8,32 +8,35 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-/**
- * Underly.it activity plugin.
- *
- * @package    mod_studymark
- * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-namespace mod_studymark\external;
-
-defined('MOODLE_INTERNAL') || die();
+namespace mod_underlyit\external;
 
 use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
-use mod_studymark\local\access;
-use mod_studymark\local\metrics;
+use mod_underlyit\local\access;
+use mod_underlyit\local\report;
 
+/**
+ * External function returning the highlighting report of an activity.
+ *
+ * @package    mod_underlyit
+ * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 final class analytics extends external_api {
+    /**
+     * Parameters of the function.
+     *
+     * @return external_function_parameters
+     */
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'cmid' => new external_value(PARAM_INT, 'Course module ID'),
@@ -41,93 +44,28 @@ final class analytics extends external_api {
         ]);
     }
 
+    /**
+     * Calculates the per-student metrics against the tutor reference.
+     *
+     * @param int $cmid Course module ID.
+     * @param int $documentid Document ID.
+     * @return array
+     */
     public static function execute(int $cmid, int $documentid): array {
-        global $DB;
-        [$cm, , $context, $document] = access::document($cmid, $documentid);
-        require_capability('mod/studymark:manageannotations', $context);
-        $totalchars = max(1, (int)$document->textlength);
-        $records = $DB->get_records('studymark_highlight', ['documentid' => $documentid], 'userid, id');
-        $byuser = [];
-        $counts = [];
-        $reference = [];
-        foreach ($records as $record) {
-            $counts[$record->userid] = ($counts[$record->userid] ?? 0) + 1;
-            $selector = json_decode($record->selectorjson ?? '', true);
-            if (($selector['type'] ?? '') !== 'text-offset') {
-                continue;
-            }
-            $start = max(0, min($totalchars, (int)($selector['start'] ?? 0)));
-            $end = max(0, min($totalchars, (int)($selector['end'] ?? 0)));
-            if ($end > $start) {
-                $byuser[$record->userid][] = [$start, $end];
-                if (!empty($record->reference)) { $reference[] = [$start, $end]; }
-            }
-        }
-        foreach ($byuser as $userid => $intervals) {
-            $byuser[$userid] = metrics::merge_intervals($intervals);
-        }
-        $reference = metrics::merge_intervals($reference);
-        $participants = get_enrolled_users($context, 'mod/studymark:addhighlight', 0, 'u.id,u.firstname,u.lastname', 'u.lastname,u.firstname');
-        $rows = [];
-        foreach ($participants as $participant) {
-            if (has_capability('mod/studymark:manageannotations', $context, $participant->id)) {
-                continue;
-            }
-            $intervals = $byuser[$participant->id] ?? [];
-            $covered = metrics::length($intervals);
-            $furthest = $intervals ? max(array_column($intervals, 1)) : 0;
-            $comparison = metrics::comparison_scores($intervals, $reference);
-            $rows[] = [
-                'userid' => (int)$participant->id,
-                'fullname' => fullname($participant),
-                'highlightcount' => (int)($counts[$participant->id] ?? 0),
-                'progress' => round(100 * $furthest / $totalchars, 1),
-                'detail' => round(100 * $covered / $totalchars, 1),
-                'differencefromaverage' => 0.0,
-                'progressdifference' => 0.0,
-                'precisiondifference' => 0.0,
-                'recalldifference' => 0.0,
-                'f1difference' => 0.0,
-                'jaccarddifference' => 0.0,
-                'precision' => round($comparison['precision'], 1),
-                'recall' => round($comparison['recall'], 1),
-                'f1score' => round($comparison['f1score'], 1),
-                'referenceoverlap' => round($comparison['jaccard'], 1),
-                'intersectionchars' => $comparison['intersection'],
-                'studentonlychars' => $comparison['studentchars'] - $comparison['intersection'],
-                'referenceonlychars' => $comparison['referencechars'] - $comparison['intersection'],
-            ];
-        }
-        $metricmap = [
-            'progress' => 'progressdifference',
-            'detail' => 'differencefromaverage',
-            'precision' => 'precisiondifference',
-            'recall' => 'recalldifference',
-            'f1score' => 'f1difference',
-            'referenceoverlap' => 'jaccarddifference',
-        ];
-        $averages = [];
-        foreach ($metricmap as $metric => $difference) {
-            $averages[$metric] = $rows
-                ? round(array_sum(array_column($rows, $metric)) / count($rows), 1)
-                : 0.0;
-        }
-        foreach ($rows as &$row) {
-            foreach ($metricmap as $metric => $difference) {
-                $row[$difference] = round($row[$metric] - $averages[$metric], 1);
-            }
-        }
-        unset($row);
-        return [
-            'documentchars' => $totalchars,
-            'referencechars' => metrics::length($reference),
-            'hasreference' => !empty($reference),
-            'courseaverage' => $averages['detail'],
-            'courseaverages' => $averages,
-            'students' => $rows,
-        ];
+        $params = self::validate_parameters(self::execute_parameters(), [
+            'cmid' => $cmid,
+            'documentid' => $documentid,
+        ]);
+        [, , $context, $document] = access::document($params['cmid'], $params['documentid']);
+        require_capability('mod/underlyit:manageannotations', $context);
+        return report::calculate($document, $context);
     }
 
+    /**
+     * Return value of the function.
+     *
+     * @return external_single_structure
+     */
     public static function execute_returns(): external_single_structure {
         return new external_single_structure([
             'documentchars' => new external_value(PARAM_INT, 'Document characters'),

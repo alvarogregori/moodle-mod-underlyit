@@ -8,23 +8,20 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+namespace mod_underlyit\event;
 
 /**
- * Underly.it activity plugin.
+ * Event fired when a user views the list of Underly.it activities in a course.
  *
- * @package    mod_studymark
+ * @package    mod_underlyit
  * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-defined('MOODLE_INTERNAL') || die();
-require_once(__DIR__ . '/backup_studymark_stepslib.php');
-class backup_studymark_activity_task extends backup_activity_task {
-    protected function define_my_settings() {}
-    protected function define_my_steps() { $this->add_step(new backup_studymark_activity_structure_step('studymark_structure', 'studymark.xml')); }
-    public static function encode_content_links($content) { return $content; }
+class course_module_instance_list_viewed extends \core\event\course_module_instance_list_viewed {
 }

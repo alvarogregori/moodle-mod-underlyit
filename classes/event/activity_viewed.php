@@ -8,23 +8,57 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+namespace mod_underlyit\event;
 
 /**
- * Underly.it activity plugin.
+ * Event fired when a user views an Underly.it activity.
  *
- * @package    mod_studymark
+ * @package    mod_underlyit
  * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace mod_studymark\event;
-defined('MOODLE_INTERNAL') || die();
 class activity_viewed extends \core\event\course_module_viewed {
-    protected function init() { parent::init(); $this->data['objecttable'] = 'studymark'; }
-    public static function get_name() { return get_string('eventactivityviewed', 'studymark'); }
-    public function get_description() { return "The user with id '{$this->userid}' viewed Underly.it activity '{$this->objectid}'."; }
+    /**
+     * Initialises the event data.
+     *
+     * @return void
+     */
+    protected function init() {
+        parent::init();
+        $this->data['objecttable'] = 'underlyit';
+    }
+
+    /**
+     * Returns the localised event name.
+     *
+     * @return string
+     */
+    public static function get_name() {
+        return get_string('eventactivityviewed', 'underlyit');
+    }
+
+    /**
+     * Returns a non-localised description of the event.
+     *
+     * @return string
+     */
+    public function get_description() {
+        return "The user with id '{$this->userid}' viewed the Underly.it activity with course module id " .
+            "'{$this->contextinstanceid}'.";
+    }
+
+    /**
+     * Maps the object ID when restoring logs.
+     *
+     * @return array
+     */
+    public static function get_objectid_mapping() {
+        return ['db' => 'underlyit', 'restore' => 'underlyit'];
+    }
 }
