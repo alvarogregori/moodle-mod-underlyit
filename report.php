@@ -8,37 +8,41 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Underly.it activity plugin.
+ * Displays the highlighting report of an activity.
  *
- * @package    mod_studymark
+ * @package    mod_underlyit
  * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 require('../../config.php');
 $id = required_param('id', PARAM_INT);
-$cm = get_coursemodule_from_id('studymark', $id, 0, false, MUST_EXIST);
-$activity = $DB->get_record('studymark', ['id' => $cm->instance], '*', MUST_EXIST);
+$cm = get_coursemodule_from_id('underlyit', $id, 0, false, MUST_EXIST);
+$activity = $DB->get_record('underlyit', ['id' => $cm->instance], '*', MUST_EXIST);
 $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
 require_login($course, true, $cm);
 $context = context_module::instance($cm->id);
-require_capability('mod/studymark:manageannotations', $context);
-$PAGE->set_url('/mod/studymark/report.php', ['id' => $cm->id]);
-$PAGE->set_title(get_string('analytics', 'studymark'));
+require_capability('mod/underlyit:manageannotations', $context);
+$PAGE->set_url('/mod/underlyit/report.php', ['id' => $cm->id]);
+$PAGE->set_title(get_string('analytics', 'underlyit'));
 $PAGE->set_heading(format_string($course->fullname));
-$PAGE->requires->js(new moodle_url('/mod/studymark/thirdparty/pdfjs/pdf.min.js'), true);
-$PAGE->requires->js(new moodle_url('/mod/studymark/thirdparty/jszip/jszip.min.js'), true);
-$PAGE->requires->js_call_amd('mod_studymark/analytics', 'init', [[
-    'cmid' => (int)$cm->id,
-    'pdfworkerurl' => (new moodle_url('/mod/studymark/thirdparty/pdfjs/pdf.worker.min.js'))->out(false),
-]]);
+
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('analyticstitle', 'studymark', format_string($activity->name)));
-echo html_writer::div('', 'mod-studymark-analytics', ['id' => 'studymark-analytics']);
+echo $OUTPUT->heading(get_string('analyticstitle', 'underlyit', format_string($activity->name)));
+$document = $DB->get_record('underlyit_document', ['underlyitid' => $activity->id]);
+if (!$document) {
+    echo $OUTPUT->notification(get_string('nodocument', 'underlyit'), \core\output\notification::NOTIFY_INFO);
+} else if (empty($document->textlength)) {
+    echo $OUTPUT->notification(get_string('documentnotmeasured', 'underlyit'), \core\output\notification::NOTIFY_WARNING);
+} else {
+    $report = new \mod_underlyit\output\report(\mod_underlyit\local\report::calculate($document, $context));
+    echo $OUTPUT->render_from_template('mod_underlyit/report', $report->export_for_template($OUTPUT));
+}
 echo $OUTPUT->footer();

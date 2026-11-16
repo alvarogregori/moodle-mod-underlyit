@@ -8,34 +8,38 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+namespace mod_underlyit\completion;
+
+use core_completion\activity_custom_completion;
+use mod_underlyit\local\metrics;
 
 /**
- * Underly.it activity plugin.
+ * Custom completion rules of the Underly.it activity.
  *
- * @package    mod_studymark
+ * @package    mod_underlyit
  * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace mod_studymark\completion;
-
-defined('MOODLE_INTERNAL') || die();
-
-use core_completion\activity_custom_completion;
-use mod_studymark\local\metrics;
-
 final class custom_completion extends activity_custom_completion {
+    /**
+     * Returns the completion state of a rule for the user.
+     *
+     * @param string $rule Rule name.
+     * @return int COMPLETION_COMPLETE or COMPLETION_INCOMPLETE.
+     */
     public function get_state(string $rule): int {
         global $DB;
-        $activity = $DB->get_record('studymark', ['id' => $this->cm->instance], '*', MUST_EXIST);
+        $activity = $DB->get_record('underlyit', ['id' => $this->cm->instance], '*', MUST_EXIST);
         if (!in_array($rule, self::get_defined_custom_rules(), true)) {
             throw new \coding_exception('Invalid completion rule: ' . $rule);
         }
-        $document = $DB->get_record('studymark_document', ['studymarkid' => $activity->id]);
+        $document = $DB->get_record('underlyit_document', ['underlyitid' => $activity->id]);
         if (!$document || empty($document->textlength)) {
             return COMPLETION_INCOMPLETE;
         }
@@ -48,20 +52,39 @@ final class custom_completion extends activity_custom_completion {
             ? COMPLETION_COMPLETE : COMPLETION_INCOMPLETE;
     }
 
+    /**
+     * Lists the custom rules.
+     *
+     * @return string[]
+     */
     public static function get_defined_custom_rules(): array {
         return ['completionprogress', 'completionmatch'];
     }
 
+    /**
+     * Describes the rules for the activity information.
+     *
+     * @return array
+     */
     public function get_custom_rule_descriptions(): array {
         global $DB;
-        $activity = $DB->get_record('studymark', ['id' => $this->cm->instance],
-            'completionprogress, completionmatch', MUST_EXIST);
+        $activity = $DB->get_record(
+            'underlyit',
+            ['id' => $this->cm->instance],
+            'completionprogress, completionmatch',
+            MUST_EXIST
+        );
         return [
-            'completionprogress' => get_string('completionprogressdesc', 'studymark', $activity->completionprogress),
-            'completionmatch' => get_string('completionmatchdesc', 'studymark', $activity->completionmatch),
+            'completionprogress' => get_string('completionprogressdesc', 'underlyit', $activity->completionprogress),
+            'completionmatch' => get_string('completionmatchdesc', 'underlyit', $activity->completionmatch),
         ];
     }
 
+    /**
+     * Order in which the rules are displayed.
+     *
+     * @return string[]
+     */
     public function get_sort_order(): array {
         return ['completionprogress', 'completionmatch'];
     }

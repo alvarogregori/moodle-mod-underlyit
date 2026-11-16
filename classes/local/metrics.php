@@ -8,28 +8,40 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+namespace mod_underlyit\local;
 
 /**
- * Underly.it activity plugin.
+ * Interval arithmetic and highlighting metrics.
  *
- * @package    mod_studymark
+ * @package    mod_underlyit
  * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace mod_studymark\local;
-
-defined('MOODLE_INTERNAL') || die();
-
 final class metrics {
+    /**
+     * Calculates a learner's reading progress and reference match.
+     *
+     * @param int $documentid Document ID.
+     * @param int $userid Learner user ID.
+     * @param int $totalchars Normalised document length.
+     * @param \context_module $context Module context.
+     * @return array With keys progress, match and hasreference.
+     */
     public static function user_metrics(int $documentid, int $userid, int $totalchars, \context_module $context): array {
         global $DB;
         $totalchars = max(1, $totalchars);
-        $records = $DB->get_records('studymark_highlight', ['documentid' => $documentid], 'userid, id', 'id,userid,selectorjson,reference');
+        $records = $DB->get_records(
+            'underlyit_highlight',
+            ['documentid' => $documentid],
+            'userid, id',
+            'id, userid, selectorjson, reference'
+        );
         $student = [];
         $reference = [];
         foreach ($records as $record) {
@@ -59,8 +71,16 @@ final class metrics {
         ];
     }
 
+    /**
+     * Sorts and merges overlapping [start, end) intervals.
+     *
+     * @param array $intervals List of [start, end] pairs.
+     * @return array Merged intervals.
+     */
     public static function merge_intervals(array $intervals): array {
-        if (!$intervals) { return []; }
+        if (!$intervals) {
+            return [];
+        }
         usort($intervals, static fn($a, $b) => ($a[0] <=> $b[0]) ?: ($a[1] <=> $b[1]));
         $merged = [array_shift($intervals)];
         foreach ($intervals as $interval) {
@@ -74,19 +94,45 @@ final class metrics {
         return $merged;
     }
 
+    /**
+     * Total length covered by merged intervals.
+     *
+     * @param array $intervals Merged intervals.
+     * @return int
+     */
     public static function length(array $intervals): int {
         return array_sum(array_map(static fn($interval) => $interval[1] - $interval[0], $intervals));
     }
 
+    /**
+     * Length of the intersection of two lists of merged intervals.
+     *
+     * @param array $left Merged intervals.
+     * @param array $right Merged intervals.
+     * @return int
+     */
     public static function intersection_length(array $left, array $right): int {
-        $length = 0; $i = 0; $j = 0;
+        $length = 0;
+        $i = 0;
+        $j = 0;
         while ($i < count($left) && $j < count($right)) {
             $length += max(0, min($left[$i][1], $right[$j][1]) - max($left[$i][0], $right[$j][0]));
-            if ($left[$i][1] < $right[$j][1]) { $i++; } else { $j++; }
+            if ($left[$i][1] < $right[$j][1]) {
+                $i++;
+            } else {
+                $j++;
+            }
         }
         return $length;
     }
 
+    /**
+     * Compares learner and reference highlighting.
+     *
+     * @param array $student Learner intervals.
+     * @param array $reference Reference intervals.
+     * @return array Character counts, precision, recall, F1 and Jaccard (percentages).
+     */
     public static function comparison_scores(array $student, array $reference): array {
         $student = self::merge_intervals($student);
         $reference = self::merge_intervals($reference);

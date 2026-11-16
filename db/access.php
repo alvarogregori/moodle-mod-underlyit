@@ -8,51 +8,55 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Underly.it activity plugin.
+ * Capability definitions for the Underly.it activity.
  *
- * @package    mod_studymark
+ * @package    mod_underlyit
  * @copyright  2026 Álvaro Gregori <50322409+alvarogregori@users.noreply.github.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 defined('MOODLE_INTERNAL') || die();
 
+$everyone = [
+    'student' => CAP_ALLOW,
+    'teacher' => CAP_ALLOW,
+    'editingteacher' => CAP_ALLOW,
+    'manager' => CAP_ALLOW,
+];
+$editors = [
+    'editingteacher' => CAP_ALLOW,
+    'manager' => CAP_ALLOW,
+];
+
 $capabilities = [
-    'mod/studymark:addinstance' => [
+    'mod/underlyit:addinstance' => [
         'riskbitmask' => RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => ['editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW],
+        'archetypes' => $editors,
         'clonepermissionsfrom' => 'moodle/course:manageactivities',
     ],
-    'mod/studymark:view' => [
-        'captype' => 'read', 'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => ['student' => CAP_ALLOW, 'teacher' => CAP_ALLOW, 'editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW],
+    'mod/underlyit:view' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => $everyone,
     ],
-    'mod/studymark:managefiles' => [
-        'riskbitmask' => RISK_XSS, 'captype' => 'write', 'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => ['editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW],
+    'mod/underlyit:addhighlight' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => $everyone,
     ],
-    'mod/studymark:addhighlight' => [
-        'captype' => 'write', 'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => ['student' => CAP_ALLOW, 'teacher' => CAP_ALLOW, 'editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW],
-    ],
-    'mod/studymark:sharehighlight' => [
-        'riskbitmask' => RISK_PERSONAL, 'captype' => 'write', 'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => ['student' => CAP_ALLOW, 'teacher' => CAP_ALLOW, 'editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW],
-    ],
-    'mod/studymark:addcomment' => [
-        'riskbitmask' => RISK_SPAM, 'captype' => 'write', 'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => ['student' => CAP_ALLOW, 'teacher' => CAP_ALLOW, 'editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW],
-    ],
-    'mod/studymark:manageannotations' => [
-        'riskbitmask' => RISK_PERSONAL, 'captype' => 'write', 'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => ['editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW],
+    'mod/underlyit:manageannotations' => [
+        'riskbitmask' => RISK_PERSONAL,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => $editors,
     ],
 ];

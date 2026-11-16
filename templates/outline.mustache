@@ -1,0 +1,40 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_underlyit/outline
+
+    Document outline built by the reader from the headings of the document.
+
+    Context variables required for this template:
+    * headings - List of headings: id, level and text
+    * hasheadings - Whether the document has headings
+
+    Example context (json):
+    {
+        "hasheadings": true,
+        "headings": [
+            {"id": "underlyit-block-0", "level": 1, "text": "Introduction"},
+            {"id": "underlyit-block-4", "level": 2, "text": "Method"}
+        ]
+    }
+}}
+{{#headings}}
+<a class="underlyit-outline-link level-{{level}}" href="#{{id}}" data-outline-id="{{id}}"><span class="underlyit-outline-marker" aria-hidden="true"></span>{{text}}</a>
+{{/headings}}
+{{^hasheadings}}
+<p class="text-muted small">{{#str}}noheadings, mod_underlyit{{/str}}</p>
+{{/hasheadings}}
