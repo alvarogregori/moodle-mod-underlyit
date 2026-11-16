@@ -1,3 +1,7 @@
+## 0.17.1
+
+- Fixed the highlighting report printing part of its template documentation: the example context closed the Mustache comment early. A new test renders every template with its example context.
+
 ## 0.17.0
 
 - Renamed the component from `mod_studymark` to `mod_underlyit` before the first public release. This is a new plugin for Moodle: it installs in `mod/underlyit` with fresh tables and does not upgrade earlier `mod_studymark` installations.
